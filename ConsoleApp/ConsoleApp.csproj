@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+	<ItemGroup>
+		<Content Include="$(SolutionDir)\Input\*.*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Input\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Content Update="..\Input\Day1.txt" Link="Input\Day1.txt" />
+	</ItemGroup>
+
+</Project>
