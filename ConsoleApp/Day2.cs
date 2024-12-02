@@ -51,6 +51,27 @@ namespace ConsoleApp
             return true;
         }
 
+        public bool isSafePart2(List<int> list)
+        {
+            if (isSafePart1(list))
+            {
+                return true;
+
+            }
+
+            for (var i = 0; i < list.Count; i++)
+            {
+                var copy = new List<int>(list);
+                copy.RemoveAt(i);
+                if (isSafePart1(copy))
+                {
+                    return true;
+                }
+
+            }
+
+            return false;
+        }
 
 
 
@@ -77,25 +98,9 @@ namespace ConsoleApp
 
             foreach (var row in data)
             {
-                if (isSafePart1(row))
+                if (isSafePart2(row))
                 {
                     result++;
-
-                }
-                else
-                {
-
-                    for (int i = 0; i < row.Count; i++)
-                    {
-                        var copy = new List<int>(row);
-                        copy.RemoveAt(i);
-                        if (isSafePart1(copy))
-                        {
-                            result++;
-                            break;
-                        }
-
-                    }
                 }
             }
             return result;
