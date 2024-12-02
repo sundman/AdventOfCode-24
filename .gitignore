@@ -13,3 +13,5 @@
 /.vs/AdventOfCode-24/config
 /.vs
 /Input
+/ConsoleApp/Input/day2.txt
+/ConsoleApp/.vs/ConsoleApp/DesignTimeBuild
