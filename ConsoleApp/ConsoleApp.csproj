@@ -13,9 +13,9 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Content Include="input\day2.txt" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Input\" />
+	  <Content Include="Input\day3.txt">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 	<ItemGroup>
 	  <Content Update="..\Input\Day1.txt" Link="Input\Day1.txt" />

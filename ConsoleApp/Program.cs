@@ -3,7 +3,7 @@
 using System.Diagnostics;
 using ConsoleApp;
 
-var day = new Day2();
+var day = new Day3();
 
 Stopwatch timer = new Stopwatch();  
 timer.Start();
