@@ -12,12 +12,6 @@ namespace ConsoleApp
     internal class Day4
     {
 
-        class PotentialHit
-        {
-            public string Search { get; set; }
-
-        }
-
         public decimal Part1()
         {
             decimal result = 0;
