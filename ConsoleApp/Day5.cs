@@ -32,16 +32,16 @@
         public decimal Part1()
         {
             decimal total = 0;
-            var data = ReadInput();
+            var (dict, lists) = ReadInput();
 
-            foreach (var list in data.Item2)
+            foreach (var list in lists)
             {
                 var correct = true;
                 for (int i = 0; i < list.Count - 1; i++)
                 {
                     var after = list.Skip(i + 1).ToHashSet();
 
-                    if (!after.IsSubsetOf(data.Item1[list[i]]))
+                    if (!after.IsSubsetOf(dict[list[i]]))
                     {
                         correct = false;
                         break;
@@ -59,18 +59,19 @@
         public decimal Part2()
         {
             decimal total = 0;
-            var data = ReadInput();
+            var (dict, lists) = ReadInput();
 
-            foreach (var list in data.Item2)
+            foreach (var list in lists)
             {
                 for (int i = 0; i < list.Count - 1; i++)
                 {
                     var after = list.Skip(i + 1).ToHashSet();
 
-                    if (!after.IsSubsetOf(data.Item1[list[i]]))
+                    if (!after.IsSubsetOf(dict[list[i]]))
                     {
-                        var fix = sortList(list, data.Item1);
-                        total += fix[fix.Count / 2];
+                        list.Sort((i, ii) => dict[i].Contains(ii) ? 1 : -1);
+
+                        total += list[list.Count / 2];
                         break;
                     }
                 }
@@ -78,6 +79,7 @@
             return total;
         }
 
+        // original way to sort...
         private List<int> sortList(List<int> list, Dictionary<int, HashSet<int>> dict)
         {
             List<int> toReturn = [];
