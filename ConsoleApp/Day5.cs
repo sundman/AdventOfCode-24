@@ -1,4 +1,7 @@
-﻿namespace ConsoleApp
+﻿using System.Data.Common;
+using Microsoft.VisualBasic;
+
+namespace ConsoleApp
 {
     internal class Day5
     {
@@ -27,6 +30,35 @@
             }
 
             return (dict, list);
+        }
+
+        // alternative way to do it, albeit not that effective. But fun. You can sort them by the number of times they appear on the left
+        // side on those rules where both sides are in the list. 
+        public void Party()
+        {
+
+            var data = File.ReadAllLines($"Input/{GetType().Name}.txt");
+
+            var rules = data.Where(x => x.Contains('|')).Select(x => x.Split('|')).ToList();
+            var lines = data.Where(x => x.Contains(',')).Select(x => x.Split(',')).ToList();
+
+            decimal totalPart1 = 0;
+            decimal totalPart2 = 0;
+            foreach (var line in lines)
+            {
+                var rulesThatApply = rules.Where(x => line.Contains(x[0]) && line.Contains(x[1]));
+
+                var correctOrder = line.Select(x => x)
+                    .OrderByDescending(sort => rulesThatApply.Count(rule => rule[0] == sort)).ToList();
+
+                if (correctOrder.SequenceEqual(line))
+                    totalPart1 += int.Parse(correctOrder[correctOrder.Count / 2]);
+                else
+                    totalPart2 += int.Parse(correctOrder[correctOrder.Count / 2]);
+            }
+
+            Console.WriteLine($"Part1: {totalPart1}, Part2: {totalPart2}");
+
         }
 
         public decimal Part1()
