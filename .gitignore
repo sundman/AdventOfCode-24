@@ -13,8 +13,6 @@
 /.vs/AdventOfCode-24/config
 /.vs
 /Input
-/ConsoleApp/Input/day2.txt
 /ConsoleApp/.vs/ConsoleApp/DesignTimeBuild
-/ConsoleApp/Input/day3.txt
-/ConsoleApp/Input/day4.txt
-/ConsoleApp/Input/day5.txt
+
+/ConsoleApp/Input/
