@@ -10,14 +10,14 @@ namespace ConsoleApp
             Obstacle,
             Lava
         }
-        
+
         private (int, int, Tile[,]) readInput()
         {
             var dir = Debugger.IsAttached ? "Example" : "Input";
             var data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             var size = data.Length;
 
-            var map = new Tile[size+2, size+2];
+            var map = new Tile[size + 2, size + 2];
             int startX = 0, startY = 0;
             for (int y = 0; y < size; y++)
             {
@@ -37,9 +37,9 @@ namespace ConsoleApp
             for (int x = 0; x < size; x++)
             {
                 map[x, 0] = Tile.Lava;
-                map[x, size+1] = Tile.Lava;
+                map[x, size + 1] = Tile.Lava;
                 map[0, x] = Tile.Lava;
-                map[size+1, x] = Tile.Lava;
+                map[size + 1, x] = Tile.Lava;
             }
 
             return (startX, startY, map);
@@ -100,28 +100,29 @@ namespace ConsoleApp
             decimal result = 0;
 
             var (startX, startY, map) = readInput();
-          
+
+            var tasks = new List<Task<bool>>();
+
             foreach (var currPos in part1Walk())
             {
                 // this case doesn't seem to be needed, but the task says you are not allowed to place an obstruction here...
                 if (currPos.Item1 == startX && currPos.Item2 == startY)
                     continue;
 
-                map[currPos.Item1, currPos.Item2] = Tile.Obstacle;
-                if (IsLoop(map, startX, startY))
-                    result += 1;
-
-                map[currPos.Item1, currPos.Item2] = 0;
+                tasks.Add(Task.Run(() => IsLoop(map, startX, startY, currPos.Item1, currPos.Item2)));
+                
             }
 
-            return result;
+            return Task.WhenAll(tasks).Result.Count(x => x);
+
         }
 
-        private bool IsLoop(Tile[,] map, int startX, int startY)
+
+        private bool IsLoop(Tile[,] map, int startX, int startY, int extraX, int extraY)
         {
             var currX = startX;
             var currY = startY;
-            var size = map.GetLength(0); 
+            var size = map.GetLength(0);
             var visited = new int[size, size];
             var direction = 3; // 3 is up
 
@@ -130,7 +131,7 @@ namespace ConsoleApp
                 var newX = currX + directions[direction].Item1;
                 var newY = currY + directions[direction].Item2;
 
-                if (map[newX, newY] == Tile.Obstacle)
+                if (map[newX, newY] == Tile.Obstacle || newX == extraX && newY == extraY)
                 {
                     // have we been here facing this direction before?
                     if ((visited[currX, currY] & (1 << direction)) != 0)
@@ -150,8 +151,7 @@ namespace ConsoleApp
 
             return false;
         }
-
-
+        
 
     }
 }
