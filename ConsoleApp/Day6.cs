@@ -69,33 +69,40 @@ namespace ConsoleApp
                 new(1, 0), new(0, 1), new(-1, 0), new(0, -1)
             };
 
-            var currentPosition = startPosition;
             var toReturn = new List<Point>();
             var visited = new bool[size, size];
             var direction = 3;
 
+            var currX = startPosition.X;
+            var currY = startPosition.Y;
+
             while (true)
             {
-                if (!visited[currentPosition.X, currentPosition.Y])
+
+
+
+                if (!visited[currX, currY])
                 {
-                    visited[currentPosition.X, currentPosition.Y] = true;
-                    toReturn.Add(currentPosition);
+                    visited[currX, currY] = true;
+                    toReturn.Add(new Point(currX, currY));
                 }
 
+                var newX = currX + dirs[direction].X;
+                var newY = currY + dirs[direction].Y;
 
-
-                var newPos = currentPosition + dirs[direction];
-
-                if (!(newPos.X >= 0 && newPos.X < size && newPos.Y >= 0 && newPos.Y < size))
+                if (!(newX >= 0 && newX < size && newY >= 0 && newY < size))
                     break;
 
-                if (obstacles[newPos.X, newPos.Y])
+                if (obstacles[newX, newY])
                 {
+                    // turn
                     direction = (direction + 1) % 4;
                     continue;
                 }
 
-                currentPosition = newPos;
+                // walk
+                currX = newX;
+                currY = newY;
 
 
             }
@@ -117,7 +124,7 @@ namespace ConsoleApp
                     continue;
 
                 obstacles[currPos.X, currPos.Y] = true;
-                if (IsLoop(obstacles, startPosition, size))
+                if (IsLoop(obstacles, startPosition.X, startPosition.Y, size))
                     result += 1;
 
                 obstacles[currPos.X, currPos.Y] = false;
@@ -126,38 +133,42 @@ namespace ConsoleApp
             return result;
         }
 
-        private bool IsLoop(bool[,] obstacles, Point startPosition, int size)
+        private bool IsLoop(bool[,] obstacles, int startX, int startY, int size)
         {
             var dirs = new List<Point>
             {
                 new(1, 0), new(0, 1), new(-1, 0), new(0, -1)
             };
 
-            var currentPosition = startPosition;
+            var currX = startX;
+            var currY = startY;
             var visited = new int[size, size];
             var direction = 3;
 
             while (true)
             {
-                var newPos = currentPosition + dirs[direction];
+                 var newX = currX + dirs[direction].X;
+                 var newY = currY + dirs[direction].Y;
 
-                if (!(newPos.X >= 0 && newPos.X < size && newPos.Y >= 0 && newPos.Y < size))
+                if (!(newX >= 0 && newX < size && newY >= 0 && newY < size))
                     break;
 
-                if (obstacles[newPos.X, newPos.Y])
+                if (obstacles[newX, newY])
                 {
                     // have we been here facing this direction before?
-                    if ((visited[currentPosition.X, currentPosition.Y] & (1 << direction)) != 0)
+                    if ((visited[currX, currY] & (1 << direction)) != 0)
                         return true;
 
-                    visited[currentPosition.X, currentPosition.Y] |= (1 << direction);
+                    visited[currX, currY] |= (1 << direction);
 
-
+                    // turn
                     direction = (direction + 1) % 4;
                     continue;
                 }
 
-                currentPosition = newPos;
+                // walk
+                currX = newX;
+                currY = newY;
             }
 
             return false;
