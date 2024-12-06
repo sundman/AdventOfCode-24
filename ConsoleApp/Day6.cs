@@ -64,13 +64,20 @@ namespace ConsoleApp
             return part1Walk().Count;
         }
 
+        class WalkPath
+        {
+            public int X;
+            public int Y;
+            public int direction;
+        }
 
-        private List<Tuple<int, int>> part1Walk()
+        // returns the path and the direction you entered it for the first time. This will be important if an obstacle is placed there!
+        private List<WalkPath> part1Walk()
         {
              var size = map.GetLength(0);
 
 
-            var toReturn = new List<Tuple<int, int>>();
+            var toReturn = new List<WalkPath>();
             var visited = new bool[size, size];
             var direction = 3; // 3 = UP
 
@@ -82,7 +89,7 @@ namespace ConsoleApp
                 if (!visited[currX, currY])
                 {
                     visited[currX, currY] = true;
-                    toReturn.Add(new(currX, currY));
+                    toReturn.Add(new WalkPath() {X = currX, Y = currY, direction = direction});
                 }
 
                 var newX = currX + directions[direction].Item1;
@@ -109,13 +116,14 @@ namespace ConsoleApp
             
             var tasks = new List<Task<bool>>();
 
-            foreach (var currPos in part1Walk())
+            // skip the first position since we shouldnt place an object there and did not come from anywhere
+            foreach (var currPos in part1Walk().Skip(1))
             {
-                // this case doesn't seem to be needed, but the task says you are not allowed to place an obstruction here...
-                if (currPos.Item1 == startX && currPos.Item2 == startY)
-                    continue;
+                // take one step back and start from there
+                var fromX = currPos.X - directions[currPos.direction].Item1;
+                var fromY = currPos.Y - directions[currPos.direction].Item2;
 
-                tasks.Add(Task.Run(() => IsLoop(map, startX, startY, currPos.Item1, currPos.Item2)));
+                tasks.Add(Task.Run(() => IsLoop(map, fromX, fromY, currPos.direction, currPos.X, currPos.Y)));
                 
             }
 
@@ -124,13 +132,12 @@ namespace ConsoleApp
         }
 
 
-        private bool IsLoop(Tile[,] map, int startX, int startY, int extraX, int extraY)
+        private bool IsLoop(Tile[,] map, int startX, int startY, int direction, int extraX, int extraY)
         {
             var currX = startX;
             var currY = startY;
             var size = map.GetLength(0);
             var visited = new int[size, size];
-            var direction = 3; // 3 is up
 
             while (map[currX, currY] != Tile.Lava)
             {
