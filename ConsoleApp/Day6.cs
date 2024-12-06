@@ -147,10 +147,10 @@ namespace ConsoleApp
                 if (obstacles[newPos.X, newPos.Y])
                 {
                     // have we been here facing this direction before?
-                    if ((visited[currentPosition.X, currentPosition.Y] & (1 << direction + 1)) != 0)
+                    if ((visited[currentPosition.X, currentPosition.Y] & (1 << direction)) != 0)
                         return true;
 
-                    visited[currentPosition.X, currentPosition.Y] |= (1 << direction + 1);
+                    visited[currentPosition.X, currentPosition.Y] |= (1 << direction);
 
 
                     direction = (direction + 1) % 4;
