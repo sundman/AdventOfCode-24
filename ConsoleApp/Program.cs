@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using ConsoleApp;
 
-var day = new Day5();
+var day = new Day6();
 
 Stopwatch timer = new Stopwatch();  
 timer.Start();
