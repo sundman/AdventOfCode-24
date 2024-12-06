@@ -11,13 +11,17 @@ namespace ConsoleApp
             Lava
         }
 
-        private (int, int, Tile[,]) readInput()
+        private Tile[,] map;
+        private int startX;
+        private int startY;
+
+        public void ReadInput()
         {
             var dir = Debugger.IsAttached ? "Example" : "Input";
             var data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             var size = data.Length;
 
-            var map = new Tile[size + 2, size + 2];
+            map = new Tile[size + 2, size + 2];
             int startX = 0, startY = 0;
             for (int y = 0; y < size; y++)
             {
@@ -42,13 +46,18 @@ namespace ConsoleApp
                 map[size + 1, x] = Tile.Lava;
             }
 
-            return (startX, startY, map);
+            this.map = map;
+            this.startX = startX;
+            this.startY = startY;
+            
         }
 
         readonly Tuple<int, int>[] directions =
         [
             new(1, 0), new(0, 1), new(-1, 0), new(0, -1)
         ];
+
+
 
         public decimal Part1()
         {
@@ -58,8 +67,7 @@ namespace ConsoleApp
 
         private List<Tuple<int, int>> part1Walk()
         {
-            var (startX, startY, map) = readInput();
-            var size = map.GetLength(0);
+             var size = map.GetLength(0);
 
 
             var toReturn = new List<Tuple<int, int>>();
@@ -98,9 +106,7 @@ namespace ConsoleApp
         public decimal Part2()
         {
             decimal result = 0;
-
-            var (startX, startY, map) = readInput();
-
+            
             var tasks = new List<Task<bool>>();
 
             foreach (var currPos in part1Walk())
@@ -133,10 +139,12 @@ namespace ConsoleApp
 
                 if (map[newX, newY] == Tile.Obstacle || newX == extraX && newY == extraY)
                 {
-                    // have we been here facing this direction before?
+                    // have we been here facing this direction before? We only check this on turns to save on comparisons.
+                    // It is faster even though we might walk a bit longer than necessary before realising we are looping.
                     if ((visited[currX, currY] & (1 << direction)) != 0)
                         return true;
 
+                    // add current location and direction to visited
                     visited[currX, currY] |= (1 << direction);
 
                     // turn
