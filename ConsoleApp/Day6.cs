@@ -2,98 +2,85 @@
 
 namespace ConsoleApp
 {
-    public class Point(int x, int y)
-    {
-        public int X { get; set; } = x;
-        public int Y { get; set; } = y;
-        public static Point operator +(Point p1, Point p2) { return new Point(p1.X + p2.X, p1.Y + p2.Y); }
-
-        public override bool Equals(object? obj)
-        {
-            var toCheck = obj as Point;
-
-            return toCheck != null && Equals(toCheck);
-        }
-
-        protected bool Equals(Point other)
-        {
-            return X == other.X && Y == other.Y;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(X, Y);
-        }
-    }
-
     internal class Day6
     {
-
-
-        private (Point, bool[,]) readInput()
+        enum Tile
+        {
+            Empty,
+            Obstacle,
+            Lava
+        }
+        
+        private (int, int, Tile[,]) readInput()
         {
             var dir = Debugger.IsAttached ? "Example" : "Input";
             var data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             var size = data.Length;
 
-            var obstacles = new bool[size, size];
-            Point? startPosition = null;
-
+            var map = new Tile[size+2, size+2];
+            int startX = 0, startY = 0;
             for (int y = 0; y < size; y++)
             {
-
                 for (int x = 0; x < size; x++)
                 {
-                    if (data[y][x] == '#')
-                        obstacles[x, y] = true;
+                    var c = data[y][x];
 
-                    if (data[y][x] == '^')
-                        startPosition = new Point(x, y);
+                    switch (c)
+                    {
+                        case '#': map[x + 1, y + 1] = Tile.Obstacle; break;
+                        case '^': startX = x + 1; startY = y + 1; ; break;
+                    }
                 }
             }
 
-            return (startPosition, obstacles);
+            // lets dig a pit of lava around the map to make edge-checks easier (yes, the input is a square)
+            for (int x = 0; x < size; x++)
+            {
+                map[x, 0] = Tile.Lava;
+                map[x, size+1] = Tile.Lava;
+                map[0, x] = Tile.Lava;
+                map[size+1, x] = Tile.Lava;
+            }
+
+            return (startX, startY, map);
         }
+
+        readonly Tuple<int, int>[] directions =
+        [
+            new(1, 0), new(0, 1), new(-1, 0), new(0, -1)
+        ];
 
         public decimal Part1()
         {
             return part1Walk().Count;
         }
 
-        private List<Point> part1Walk()
+
+        private List<Tuple<int, int>> part1Walk()
         {
-            var (startPosition, obstacles) = readInput();
-            var size = obstacles.GetLength(0);
-            var dirs = new List<Point>
-            {
-                new(1, 0), new(0, 1), new(-1, 0), new(0, -1)
-            };
+            var (startX, startY, map) = readInput();
+            var size = map.GetLength(0);
 
-            var toReturn = new List<Point>();
+
+            var toReturn = new List<Tuple<int, int>>();
             var visited = new bool[size, size];
-            var direction = 3;
+            var direction = 3; // 3 = UP
 
-            var currX = startPosition.X;
-            var currY = startPosition.Y;
+            var currX = startX;
+            var currY = startY;
 
-            while (true)
+            while (map[currX, currY] != Tile.Lava)
             {
-
-
-
                 if (!visited[currX, currY])
                 {
                     visited[currX, currY] = true;
-                    toReturn.Add(new Point(currX, currY));
+                    toReturn.Add(new(currX, currY));
                 }
 
-                var newX = currX + dirs[direction].X;
-                var newY = currY + dirs[direction].Y;
+                var newX = currX + directions[direction].Item1;
+                var newY = currY + directions[direction].Item2;
 
-                if (!(newX >= 0 && newX < size && newY >= 0 && newY < size))
-                    break;
-
-                if (obstacles[newX, newY])
+                if (map[newX, newY] == Tile.Obstacle)
                 {
                     // turn
                     direction = (direction + 1) % 4;
@@ -103,57 +90,47 @@ namespace ConsoleApp
                 // walk
                 currX = newX;
                 currY = newY;
-
-
             }
 
             return toReturn;
-
         }
 
         public decimal Part2()
         {
             decimal result = 0;
 
-            var (startPosition, obstacles) = readInput();
-            var size = obstacles.GetLength(0);
-
+            var (startX, startY, map) = readInput();
+          
             foreach (var currPos in part1Walk())
             {
-                if (currPos.Equals(startPosition))
+                // this case doesn't seem to be needed, but the task says you are not allowed to place an obstruction here...
+                if (currPos.Item1 == startX && currPos.Item2 == startY)
                     continue;
 
-                obstacles[currPos.X, currPos.Y] = true;
-                if (IsLoop(obstacles, startPosition.X, startPosition.Y, size))
+                map[currPos.Item1, currPos.Item2] = Tile.Obstacle;
+                if (IsLoop(map, startX, startY))
                     result += 1;
 
-                obstacles[currPos.X, currPos.Y] = false;
+                map[currPos.Item1, currPos.Item2] = 0;
             }
 
             return result;
         }
 
-        private bool IsLoop(bool[,] obstacles, int startX, int startY, int size)
+        private bool IsLoop(Tile[,] map, int startX, int startY)
         {
-            var dirs = new List<Point>
-            {
-                new(1, 0), new(0, 1), new(-1, 0), new(0, -1)
-            };
-
             var currX = startX;
             var currY = startY;
+            var size = map.GetLength(0); 
             var visited = new int[size, size];
-            var direction = 3;
+            var direction = 3; // 3 is up
 
-            while (true)
+            while (map[currX, currY] != Tile.Lava)
             {
-                 var newX = currX + dirs[direction].X;
-                 var newY = currY + dirs[direction].Y;
+                var newX = currX + directions[direction].Item1;
+                var newY = currY + directions[direction].Item2;
 
-                if (!(newX >= 0 && newX < size && newY >= 0 && newY < size))
-                    break;
-
-                if (obstacles[newX, newY])
+                if (map[newX, newY] == Tile.Obstacle)
                 {
                     // have we been here facing this direction before?
                     if ((visited[currX, currY] & (1 << direction)) != 0)
