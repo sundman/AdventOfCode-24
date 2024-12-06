@@ -22,7 +22,6 @@ namespace ConsoleApp
             var size = data.Length;
 
             map = new Tile[size + 2, size + 2];
-            int startX = 0, startY = 0;
             for (int y = 0; y < size; y++)
             {
                 for (int x = 0; x < size; x++)
@@ -46,9 +45,6 @@ namespace ConsoleApp
                 map[size + 1, x] = Tile.Lava;
             }
 
-            this.map = map;
-            this.startX = startX;
-            this.startY = startY;
             
         }
 
