@@ -22,19 +22,19 @@ namespace ConsoleApp
             }
         }
 
-        private bool Reverse(ref long[] numbers, long currSum, int pos, bool allowConcat)
+        private bool Reverse(long[] numbers, long currSum, int pos, bool allowConcat)
         {
             if (pos == 0)
                 return currSum == numbers[0];
 
              // subtract if possible
             if (currSum > numbers[pos] &&
-                Reverse(ref numbers, currSum - numbers[pos], pos - 1, allowConcat))
+                Reverse(numbers, currSum - numbers[pos], pos - 1, allowConcat))
                 return true;
 
             // division if no remainder
             if (currSum % numbers[pos] == 0 &&
-                Reverse(ref numbers, currSum / numbers[pos], pos - 1, allowConcat))
+                Reverse(numbers, currSum / numbers[pos], pos - 1, allowConcat))
                 return true;
 
             if (allowConcat)
@@ -43,7 +43,7 @@ namespace ConsoleApp
                 var divideBy = (long)Math.Pow(10, Math.Floor(Math.Log10(numbers[pos])) + 1);
 
                 if (currSum % divideBy == numbers[pos] && 
-                    Reverse(ref numbers, currSum / divideBy, pos - 1, allowConcat))
+                    Reverse(numbers, currSum / divideBy, pos - 1, allowConcat))
                     return true;
             }
             return false;
@@ -56,7 +56,7 @@ namespace ConsoleApp
             foreach (var kvp in sums)
             {
                 var numbers = kvp.Value;
-                if (Reverse(ref numbers, kvp.Key, kvp.Value.Length-1, false))
+                if (Reverse(numbers, kvp.Key, kvp.Value.Length-1, false))
                     result += kvp.Key;
             }
 
@@ -69,7 +69,7 @@ namespace ConsoleApp
             foreach (var kvp in sums)
             {
                 var numbers = kvp.Value;
-                if (Reverse(ref numbers, kvp.Key, kvp.Value.Length - 1, true))
+                if (Reverse( numbers, kvp.Key, kvp.Value.Length - 1, true))
                       result += kvp.Key;
 
             }
