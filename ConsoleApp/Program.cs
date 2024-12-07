@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using ConsoleApp;
 
-var day = new Day6();
+var day = new Day7();
 
 var total = new Stopwatch();
 var timer = new Stopwatch();
