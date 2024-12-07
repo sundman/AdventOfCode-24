@@ -38,18 +38,18 @@ namespace ConsoleApp
 
         }
 
-        private bool Part2Recursive(decimal[] numbers, decimal currSum, int pos, decimal goal)
+        private bool Part2Recursive(double[] numbers, double currSum, int pos, double goal)
         {
             if (numbers.Length == pos + 1)
                 return currSum == goal;
 
             if (currSum > goal)
                 return false;
-            
+
             return
                 Part2Recursive(numbers, currSum + numbers[pos + 1], pos + 1, goal) ||
-                Part2Recursive(numbers, currSum * numbers[pos + 1], pos + 1, goal) ||
-                Part2Recursive(numbers, decimal.Parse($"{currSum}{numbers[pos + 1]}"), pos + 1, goal);
+                Part2Recursive(numbers, currSum * numbers[pos + 1], pos + 1, goal) || 
+                Part2Recursive(numbers, currSum * Math.Pow(10, Math.Floor(Math.Log10(numbers[pos + 1]))+1) + numbers[pos + 1], pos + 1, goal);
 
         }
 
@@ -71,7 +71,7 @@ namespace ConsoleApp
             decimal result = 0;
             foreach (var kvp in sums)
             {
-                if (Part2Recursive(kvp.Value.ToArray(), kvp.Value[0], 0, kvp.Key))
+                if (Part2Recursive(kvp.Value.Select(x => (double)x).ToArray(), (double)kvp.Value[0], 0, (double)kvp.Key))
                     result += kvp.Key;
 
             }
