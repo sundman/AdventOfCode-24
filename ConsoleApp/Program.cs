@@ -16,9 +16,10 @@ timer.Stop();
 Console.WriteLine($"Part1 answer: {part1}");
 Console.WriteLine($"Part1 time: {timer.ElapsedMilliseconds} ms {timer.ElapsedTicks} ticks");
 timer.Restart();
-var part2= day.Part2();
+var part2 = day.Part2();
 timer.Stop();
 Console.WriteLine($"Part2 answer: {part2}");
 Console.WriteLine($"Part2 time: {timer.ElapsedMilliseconds} ms {timer.ElapsedTicks} ticks");
 Console.WriteLine($"Total time including writing these messages: {total.ElapsedMilliseconds} ms");
+
 Console.ReadLine();

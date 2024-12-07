@@ -55,11 +55,9 @@ namespace ConsoleApp
             decimal result = 0;
             foreach (var kvp in sums)
             {
-                var numbers = kvp.Value;
-                if (Reverse(numbers, kvp.Key, kvp.Value.Length-1, false))
+                if (Reverse(kvp.Value, kvp.Key, kvp.Value.Length - 1, false))
                     result += kvp.Key;
             }
-
             return result;
         }
 
@@ -68,10 +66,8 @@ namespace ConsoleApp
             decimal result = 0;
             foreach (var kvp in sums)
             {
-                var numbers = kvp.Value;
-                if (Reverse( numbers, kvp.Key, kvp.Value.Length - 1, true))
+                if (Reverse(kvp.Value, kvp.Key, kvp.Value.Length - 1, true))
                       result += kvp.Key;
-
             }
             return result;
 
