@@ -27,10 +27,7 @@ namespace ConsoleApp
             if (pos == 0)
                 return currSum == numbers[0];
 
-            if (currSum < 0)
-                return false;
-
-            // subtract if possible
+             // subtract if possible
             if (currSum > numbers[pos] &&
                 Reverse(ref numbers, currSum - numbers[pos], pos - 1, allowConcat))
                 return true;
@@ -52,8 +49,7 @@ namespace ConsoleApp
             return false;
 
         }
-
-
+        
         public decimal Part1()
         {
             decimal result = 0;
@@ -80,7 +76,5 @@ namespace ConsoleApp
             return result;
 
         }
-
-
     }
 }
