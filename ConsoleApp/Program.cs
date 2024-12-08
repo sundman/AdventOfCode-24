@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics;
 using ConsoleApp;
 
-var day = new Day7();
+var day = new Day8();
 
+Console.WriteLine($"{day.GetType().Name}");
 var total = new Stopwatch();
 var timer = new Stopwatch();
 total.Start();
