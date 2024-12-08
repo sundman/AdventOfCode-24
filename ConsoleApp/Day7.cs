@@ -2,7 +2,7 @@
 
 namespace ConsoleApp
 {
-    internal class Day7
+    internal class Day7 : IDay
     {
         private Dictionary<long, long[]> sums;
 

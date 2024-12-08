@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using String = System.String;
+﻿using System.Diagnostics;
 
 namespace ConsoleApp
 {
-    internal class Day4
+    internal class Day4 : IDay
     {
         private string[] data;
         public void ReadInput()
         {
 
-            data = File.ReadAllLines("Input/Day4.txt");
+             var dir = Debugger.IsAttached ? "Example" : "Input";
+            data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
         }
 
         public decimal Part1()

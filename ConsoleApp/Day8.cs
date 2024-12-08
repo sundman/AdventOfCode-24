@@ -3,13 +3,13 @@ using System.Drawing;
 
 namespace ConsoleApp
 {
-    internal class Day8
+    internal class Day8 : IDay
     {
         private Dictionary<char, List<Point>> antennas;
         private int mapSize;
         public void ReadInput()
         {
-            var dir = /*Debugger.IsAttached ? "Example" :*/ "Input";
+            var dir = Debugger.IsAttached ? "Example" : "Input";
             var data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             mapSize = data.Length;
             antennas = new Dictionary<char, List<Point>>();

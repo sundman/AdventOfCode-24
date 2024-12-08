@@ -1,13 +1,17 @@
-﻿namespace ConsoleApp
+﻿using System.Diagnostics;
+
+namespace ConsoleApp
 {
-    internal class Day1
+    internal class Day1 : IDay
     {
         private int[] list1;
         private int[] list2;
 
         public void ReadInput()
         {
-            var data = File.ReadAllLines("Input/Day1.txt");
+
+            var dir = Debugger.IsAttached ? "Example" : "Input";
+            var data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             
             list1 = new int[data.Length];
             list2 = new int[data.Length];

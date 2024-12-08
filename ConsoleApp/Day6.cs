@@ -2,7 +2,7 @@
 
 namespace ConsoleApp
 {
-    internal class Day6
+    internal class Day6 : IDay
     {
         enum Tile
         {
@@ -120,11 +120,9 @@ namespace ConsoleApp
                 var fromY = currPos.Y - directions[currPos.direction].Item2;
 
                 tasks.Add(Task.Run(() => IsLoop(map, fromX, fromY, currPos.direction, currPos.X, currPos.Y)));
-                
             }
 
             return Task.WhenAll(tasks).Result.Count(x => x);
-
         }
 
 

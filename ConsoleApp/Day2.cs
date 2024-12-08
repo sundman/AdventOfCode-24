@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 namespace ConsoleApp
 {
-    internal class Day2
+    internal class Day2 : IDay
     {
         private List<int>[] list;
         public void ReadInput()
         {
-            var data = File.ReadAllLines("Input/Day2.txt");
+            var dir = Debugger.IsAttached ? "Example" : "Input";
+            var data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
 
             list = new List<int>[data.Length];
 

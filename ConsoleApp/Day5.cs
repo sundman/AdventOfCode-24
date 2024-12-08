@@ -1,15 +1,17 @@
 ﻿using System.Data.Common;
+using System.Diagnostics;
 using Microsoft.VisualBasic;
 
 namespace ConsoleApp
 {
-    internal class Day5
+    internal class Day5 : IDay
     {
         private Dictionary<int, HashSet<int>> dict;
         private List<List<int>> lists;
         public void ReadInput()
         {
-            var data = File.ReadAllLines($"Input/{GetType().Name}.txt");
+            var dir = Debugger.IsAttached ? "Example" : "Input";
+            var data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             dict = new Dictionary<int, HashSet<int>>();
             lists = new List<List<int>>();
 
@@ -67,7 +69,7 @@ namespace ConsoleApp
         public decimal Part1()
         {
             decimal total = 0;
-            
+
             foreach (var list in lists)
             {
                 var correct = true;
@@ -75,7 +77,7 @@ namespace ConsoleApp
                 {
                     var after = list.Skip(i + 1).ToHashSet();
 
-                    if (!after.IsSubsetOf(dict[list[i]]))
+                    if (after.Any(x => dict.ContainsKey(x) && dict[x].Contains(list[i])))
                     {
                         correct = false;
                         break;
@@ -100,9 +102,10 @@ namespace ConsoleApp
                 {
                     var after = list.Skip(i + 1).ToHashSet();
 
-                    if (!after.IsSubsetOf(dict[list[i]]))
+                    if (after.Any(x => dict.ContainsKey(x) && dict[x].Contains(list[i])))
+
                     {
-                        list.Sort((i, ii) => dict[i].Contains(ii) ? 1 : -1);
+                        list.Sort((i, ii) => dict.ContainsKey(i) && dict[i].Contains(ii) ? 1 : -1);
 
                         total += list[list.Count / 2];
                         break;

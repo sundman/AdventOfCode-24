@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using String = System.String;
 
 namespace ConsoleApp
 {
-    internal class Day3
+    internal class Day3 : IDay
     {
         private string line;
         public void ReadInput()
         {
-            var data = File.ReadAllLines("Input/Day3.txt");
+            var dir = Debugger.IsAttached ? "Example" : "Input";
+            var data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             line = String.Join("", data);
         }
 
