@@ -8,23 +8,34 @@ namespace ConsoleApp
 {
     internal class Day2
     {
-        List<List<int>> handleInput()
+        private List<int>[] list;
+        public void ReadInput()
         {
             var data = File.ReadAllLines("Input/Day2.txt");
 
+            list = new List<int>[data.Length];
 
-
-            var list1 = new List<List<int>>();
-
-            foreach (var line in data)
+            for (int row = 0; row < data.Length; row++)
             {
-                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var numbers = new List<int>();
+                int currentNumber = 0;
+                foreach (var ch in data[row])
+                {
+                    if (ch == ' ') {
+                        numbers.Add(currentNumber);
+                        currentNumber = 0;
+                    }
+                    else
+                    {
+                        currentNumber = currentNumber * 10 + (ch - '0');
+                    }
+                }
 
-                list1.Add(parts.Select(int.Parse).ToList());
+                numbers.Add(currentNumber);
+                list[row] = numbers;
 
             }
 
-            return list1;
         }
 
 
@@ -78,8 +89,7 @@ namespace ConsoleApp
         public decimal Part1()
         {
             var result = 0;
-            var data = handleInput();
-            foreach (var row in data)
+            foreach (var row in list)
             {
                 if (isSafePart1(row))
                 {
@@ -93,10 +103,9 @@ namespace ConsoleApp
         public decimal Part2()
         {
             var result = 0;
-            var data = handleInput();
 
 
-            foreach (var row in data)
+            foreach (var row in list)
             {
                 if (isSafePart2(row))
                 {

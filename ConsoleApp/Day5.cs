@@ -5,11 +5,13 @@ namespace ConsoleApp
 {
     internal class Day5
     {
-        private (Dictionary<int, HashSet<int>>, List<List<int>>) ReadInput()
+        private Dictionary<int, HashSet<int>> dict;
+        private List<List<int>> lists;
+        public void ReadInput()
         {
             var data = File.ReadAllLines($"Input/{GetType().Name}.txt");
-            var dict = new Dictionary<int, HashSet<int>>();
-            var list = new List<List<int>>();
+            dict = new Dictionary<int, HashSet<int>>();
+            lists = new List<List<int>>();
 
             foreach (var line in data)
             {
@@ -25,11 +27,10 @@ namespace ConsoleApp
                 if (line.Contains(','))
                 {
                     var ints = line.Split(',').Select(int.Parse).ToList();
-                    list.Add(ints);
+                    lists.Add(ints);
                 }
             }
 
-            return (dict, list);
         }
 
         // alternative way to do it, albeit not that effective. But fun. You can sort them by the number of times they appear on the left
@@ -61,11 +62,12 @@ namespace ConsoleApp
 
         }
 
+
+
         public decimal Part1()
         {
             decimal total = 0;
-            var (dict, lists) = ReadInput();
-
+            
             foreach (var list in lists)
             {
                 var correct = true;
@@ -91,7 +93,6 @@ namespace ConsoleApp
         public decimal Part2()
         {
             decimal total = 0;
-            var (dict, lists) = ReadInput();
 
             foreach (var list in lists)
             {

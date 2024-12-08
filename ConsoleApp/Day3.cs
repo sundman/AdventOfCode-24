@@ -11,22 +11,35 @@ namespace ConsoleApp
 {
     internal class Day3
     {
+        private string line;
+        public void ReadInput()
+        {
+            var data = File.ReadAllLines("Input/Day3.txt");
+            line = String.Join("", data);
+        }
+
+        private static int ParseToInt(string str)
+        {
+            int number = 0;
+            foreach (var ch in str)
+            {
+                number = number * 10 + ch - '0';
+            }
+
+            return number;
+        }
+
         public decimal Part1()
         {
             decimal result = 0;
-            var data = File.ReadAllLines("Input/Day3.txt");
-            
-            var line = String.Join("", data);
 
             var matches = Regex.Matches(line, "mul\\(\\d{1,3},\\d{1,3}\\)");
 
             foreach (var match in matches.ToList())
             {
                 var nums = Regex.Matches(match.Value, "\\d+");
-                result += int.Parse(nums[0].Value) * int.Parse(nums[1].Value);
-
+                result += ParseToInt(nums[0].Value) * ParseToInt(nums[1].Value);
             }
-
 
             return result;
         }
@@ -34,20 +47,17 @@ namespace ConsoleApp
         public decimal Part2()
         {
             decimal result = 0;
-            var data = File.ReadAllLines("Input/Day3.txt");
-
-            var line = String.Join("", data);
 
             var doSection = Regex.Matches(line, "(do\\(\\)|^).*?(don't\\(\\)|$)");
 
             foreach (var doit in doSection.ToList())
             {
                 var matches = Regex.Matches(doit.Value, "mul\\(\\d{1,3},\\d{1,3}\\)");
-                
+
                 foreach (var match in matches.ToList())
                 {
                     var nums = Regex.Matches(match.Value, "\\d+");
-                    result += int.Parse(nums[0].Value) * int.Parse(nums[1].Value);
+                    result += ParseToInt(nums[0].Value) * ParseToInt(nums[1].Value);
                 }
             }
 

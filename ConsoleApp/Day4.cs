@@ -11,11 +11,16 @@ namespace ConsoleApp
 {
     internal class Day4
     {
+        private string[] data;
+        public void ReadInput()
+        {
+
+            data = File.ReadAllLines("Input/Day4.txt");
+        }
 
         public decimal Part1()
         {
             decimal result = 0;
-            var data = File.ReadAllLines("Input/Day4.txt");
 
             for (int y = 0; y < data.Length; y++)
             {
@@ -78,7 +83,6 @@ namespace ConsoleApp
         public decimal Part2()
         {
             decimal result = 0;
-            var data = File.ReadAllLines("Input/Day4.txt");
 
             for (int y = 0; y < data.Length; y++)
             {

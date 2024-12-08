@@ -9,7 +9,7 @@ namespace ConsoleApp
         private int mapSize;
         public void ReadInput()
         {
-            var dir = Debugger.IsAttached ? "Example" : "Input";
+            var dir = /*Debugger.IsAttached ? "Example" :*/ "Input";
             var data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             mapSize = data.Length;
             antennas = new Dictionary<char, List<Point>>();
@@ -74,9 +74,50 @@ namespace ConsoleApp
 
             return listOfCoords.Count;
         }
+        public decimal Part2Linear()
+        {
+            var listOfCoords = new HashSet<int>();
+
+
+            foreach (var kvp in antennas)
+            {
+                for (int i = 0; i < kvp.Value.Count; i++)
+                {
+                    for (int j = i + 1; j < kvp.Value.Count; j++)
+                    {
+
+                        var pointA = kvp.Value[i];
+                        var pointB = kvp.Value[j];
+
+                        var a = (double)(pointB.Y - pointA.Y) / (pointB.X - pointA.X);
+                        var k = pointA.Y - (a * pointA.X);
+
+                        for (int x = 0; x < mapSize; x++)
+                        {
+                            double y = a * x + k;
+                            
+                            var roundedY = (int)Math.Round(y);
+                            // Check if y is an integer by comparing it with its rounded value
+                            if (Math.Abs(y - roundedY) < (double)1e-4m && roundedY >= 0 && roundedY < mapSize)
+                            {
+                                var coords = (x << 16) + roundedY;
+                                
+
+                                listOfCoords.Add(coords);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return listOfCoords.Count;
+
+        }
 
         public decimal Part2()
         {
+
+          
             var listOfCoords = new HashSet<int>();
             foreach (var kvp in antennas)
             {
@@ -100,6 +141,8 @@ namespace ConsoleApp
                             if (newX < mapSize && newX >= 0 && newY < mapSize && newY >= 0)
                             {
                                 var coords = (newX << 16) + newY;
+                                
+
                                 listOfCoords.Add(coords);
                             }
                             else

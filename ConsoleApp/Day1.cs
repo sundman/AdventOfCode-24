@@ -1,57 +1,76 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ConsoleApp
+﻿namespace ConsoleApp
 {
     internal class Day1
     {
-        (List<int>,List<int>) handleInput()
+        private int[] list1;
+        private int[] list2;
+
+        public void ReadInput()
         {
             var data = File.ReadAllLines("Input/Day1.txt");
+            
+            list1 = new int[data.Length];
+            list2 = new int[data.Length];
 
-            decimal totalDiff = 0;
-            decimal part2Score = 0;
-
-            var list1 = new List<int>();
-            var list2 = new List<int>();
-            foreach (var line in data)
+            for (var row = 0; row < data.Length; row++)
             {
-                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                list1.Add(int.Parse(parts[0]));
-                list2.Add(int.Parse(parts[1]));
+                var line = data[row];
+
+                var pointer = 0;
+                var number = 0;
+
+                while (line[pointer] != ' ')
+                {
+                    number = number * 10 + (line[pointer] - '0');
+                    ++pointer;
+                }
+                list1[row] = number;
+
+                number = 0;
+                while (line[pointer] == ' ')
+                {
+                    ++pointer;
+                }
+
+                while (pointer < line.Length)
+                {
+                    number = number * 10 + (line[pointer] - '0');
+                    ++pointer;
+                }
+                list2[row] = number;
             }
-            return (list1, list2);
         }
 
-         public decimal Part1()
+        public decimal Part1()
         {
-            var data = handleInput();
             decimal totalDiff = 0;
-            data.Item1.Sort();
-            data.Item2.Sort();
-
-            for (int i = 0; i < data.Item1.Count; i++)
+            Array.Sort(list1);
+            Array.Sort(list2);
+            
+            for (var i = 0; i < list1.Length; i++)
             {
-                totalDiff += Math.Abs(data.Item1[i] - data.Item2[i]);
-
+                totalDiff += Math.Abs(list1[i] - list2[i]);
             }
 
             return totalDiff;
         }
 
-       public decimal Part2()
+        public decimal Part2()
         {
             decimal score = 0;
-            var data = handleInput();
 
+            var countEm = new Dictionary<int, int>();
 
-            for (int i = 0; i < data.Item1.Count; i++)
+            foreach (var num in list2)
             {
+                countEm.TryAdd(num, 0);
+                ++countEm[num];
+            }
 
-                score += data.Item1[i] * data.Item2.Count(x => x == data.Item1[i]);
+            foreach (var num in list1)
+            {
+                if (countEm.ContainsKey(num))
+                    score += num * countEm[num];
             }
 
             return score;
