@@ -14,7 +14,7 @@ namespace ConsoleApp
         public int Start;
         public int Length;
         public FreeSpace? Next;
-        public FreeSpace? Last;
+        public FreeSpace? Prev;
     }
 
     internal class Day9 : IDay
@@ -31,7 +31,7 @@ namespace ConsoleApp
 
             var dir = Debugger.IsAttached ? "Example" : "Input";
             data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
-            
+
             int memLenght = 0;
             for (int i = 0; i < data[0].Length; i++)
             {
@@ -39,15 +39,16 @@ namespace ConsoleApp
             }
 
             memory = new int[memLenght];
-            freeSpace = null;
+            freeSpace = new FreeSpace() { Start = -1, Length = -1 }
+                    ;
             bool file = true;
             int pointer = 0;
             int fileCounter = 0;
-            FreeSpace? lastFreeSpace = null;
+            FreeSpace? lastFreeSpace = freeSpace;
             for (int i = 0; i < data[0].Length; i++)
             {
                 var length = data[0][i] - '0';
-                if (file)
+                if (file && length > 0)
                 {
                     files.Add(new Files()
                     {
@@ -58,20 +59,16 @@ namespace ConsoleApp
                 }
                 else
                 {
-                    var space = new FreeSpace { Start = pointer, Length = length };
-                    if (lastFreeSpace != null)
+                    if (length > 0)
                     {
-                        space.Last = lastFreeSpace;
-                        lastFreeSpace.Next = space;
-                    }
-                    else
-                    {
-                        freeSpace = space;
-                    }
+                        var space = new FreeSpace { Start = pointer, Length = length };
 
-                    lastFreeSpace = space;
+                        lastFreeSpace.Next = space;
+                        lastFreeSpace = space;
+                    }
 
                 }
+
                 var toWrite = file ? fileCounter++ : 0;
 
 
@@ -80,21 +77,18 @@ namespace ConsoleApp
                     memory[pointer++] = toWrite;
                 }
 
-
-
                 file = !file;
             }
-
-
         }
 
 
         public decimal Part1()
         {
-            var targetMemory = new int[memory.Length];
 
-            var currentFreeSpace = freeSpace;
+            var currentFreeSpace = freeSpace.Next;
             var currentFreeSpaceUsage = 0;
+            decimal result = 0;
+
             for (int i = files.Count - 1; i >= 0; i--)
             {
                 int length = files[i].Length;
@@ -117,15 +111,19 @@ namespace ConsoleApp
                         // we fit, copy remainder of file
                         if (length - currentFileMoved <= currLength)
                         {
-                            Array.Copy(memory, pointer + currentFileMoved, targetMemory, currStart, length - currentFileMoved);
+
+                            var l = length - currentFileMoved;
+                            result += (decimal)files[i].Name * (currStart * l + (l * (l - 1)) / 2);
                             currentFreeSpaceUsage += length - currentFileMoved;
                             currentFileMoved = length;
-                           
+
 
                         }
                         else // we dont fit, copy part that fits
                         {
-                            Array.Copy(memory, pointer + length - currentFileMoved - currLength, targetMemory, currStart, currLength);
+
+                            var l = currLength;
+                            result += (decimal)files[i].Name * (currStart * l + (l * (l - 1)) / 2);
                             currentFileMoved += currLength;
                             currentFreeSpace = currentFreeSpace.Next;
                             currentFreeSpaceUsage = 0;
@@ -134,88 +132,72 @@ namespace ConsoleApp
                     }
                 }
 
-                // copy parts that should not be moved
                 if (currentFileMoved < length)
                 {
-                    Array.Copy(memory, pointer, targetMemory, pointer, length - currentFileMoved);
+                    var l = length - currentFileMoved;
+                    result += (decimal)files[i].Name * (pointer * l + (l * (l - 1)) / 2);
+
                 }
             }
 
-            decimal result = 0;
-            for (var i = 0; i < targetMemory.Length; i++)
-            {
-                result += (decimal)targetMemory[i] * i;
-
-            }
 
             return result;
         }
 
+        FreeSpace[] recalcPointersToFirstFreeeLocation(FreeSpace[] pointers, int maxPointer)
+        {
+            for (int x = 1; x < 10; x++)
+            {
+                var c = pointers[x];
+
+                while (c != null && c.Length < x)
+                    c = c.Next;
+
+                if (c == null || c.Start > maxPointer)
+                    pointers[x] = null;
+
+                pointers[x] = c;
+            }
+
+            return pointers;
+        }
+
         public decimal Part2()
         {
-            var targetMemory = new int[memory.Length];
 
-            int noFreeSpaceOfSize = 10;
+            decimal result = 0;
+
+            var pointerToFirstFreeLocation = new FreeSpace?[10];
+
+            for (int x = 1; x < 10; x++)
+            {
+                var c = freeSpace;
+
+                while (c != null && c.Length < x)
+                    c = c.Next;
+
+                pointerToFirstFreeLocation[x] = c;
+            }
+
             for (int i = files.Count - 1; i >= 0; i--)
             {
                 var length = files[i].Length;
                 var pointer = files[i].Start;
+                FreeSpace? firstFreeSpace = pointerToFirstFreeLocation[length];
 
-                if (noFreeSpaceOfSize < length)
+
+                if (firstFreeSpace == null || firstFreeSpace.Start > pointer)
                 {
-                    Array.Copy(memory, pointer, targetMemory, pointer, length);
+                    result += (decimal)files[i].Name * (pointer * length + (length * (length - 1)) / 2);
                     continue;
                 }
+                result += (decimal)files[i].Name * (firstFreeSpace.Start * length + (length * (length - 1)) / 2);
 
-                FreeSpace? firstFreeSpace = null;
 
-                var curr = freeSpace;
-                while (curr != null)
-                {
-                    if (curr.Length >= length)
-                    {
-                        firstFreeSpace = curr;
-                        break;
-                    }
+                firstFreeSpace.Start += length;
+                firstFreeSpace.Length -= length;
 
-                    if (curr.Start > pointer)
-                    {
-                        noFreeSpaceOfSize = length;
-                        break;
-                    }
-
-                    curr = curr.Next;
-                }
-
-                if (firstFreeSpace == null)
-                {
-                    Array.Copy(memory, pointer, targetMemory, pointer, length);
-                    continue;
-                }
-
-                Array.Copy(memory, pointer, targetMemory, firstFreeSpace.Start, length);
-
-                if (length < firstFreeSpace.Length)
-                {
-                    firstFreeSpace.Start += length;
-                    firstFreeSpace.Length -= length;
-                }
-                else
-                {
-                    if (firstFreeSpace.Last != null)
-                        firstFreeSpace.Last.Next = firstFreeSpace.Next;
-                    else
-                        freeSpace = firstFreeSpace.Next;
-
-                    if (firstFreeSpace.Next != null)
-                        firstFreeSpace.Next.Last = firstFreeSpace.Last;
-                }
-            }
-
-            decimal result = 0;
-            for (int i = 0; i < targetMemory.Length; i++)
-            {
-                result += (decimal)targetMemory[i] * i;
+                recalcPointersToFirstFreeeLocation(pointerToFirstFreeLocation, pointer);
             }
 
             return result;
