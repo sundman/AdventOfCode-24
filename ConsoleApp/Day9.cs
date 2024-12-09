@@ -9,19 +9,17 @@ namespace ConsoleApp
         public int Length;
     }
 
-    class FreeSpace
+    class FreeMemorySlot
     {
         public int Start;
         public int Length;
-        public FreeSpace? Next;
-        public FreeSpace? Prev;
+        public FreeMemorySlot? Next;
     }
 
     internal class Day9 : IDay
     {
-        private int[] memory;
         private List<Files> files;
-        private FreeSpace? freeSpace;
+        private FreeMemorySlot? freeSpace;
 
         private string[] data;
 
@@ -32,36 +30,36 @@ namespace ConsoleApp
             var dir = Debugger.IsAttached ? "Example" : "Input";
             data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
 
-            int memLenght = 0;
-            for (int i = 0; i < data[0].Length; i++)
-            {
-                memLenght += data[0][i] - '0';
-            }
-
-            memory = new int[memLenght];
-            freeSpace = new FreeSpace() { Start = -1, Length = -1 }
+            freeSpace = new FreeMemorySlot() { Start = -1, Length = -1 }
                     ;
             bool file = true;
             int pointer = 0;
             int fileCounter = 0;
-            FreeSpace? lastFreeSpace = freeSpace;
+            FreeMemorySlot? lastFreeSpace = freeSpace;
             for (int i = 0; i < data[0].Length; i++)
             {
                 var length = data[0][i] - '0';
-                if (file && length > 0)
+                if (file)
                 {
-                    files.Add(new Files()
+                    // only create file if it has size (note that fileCounter must increase regardless though)
+                    if (length > 0)
                     {
-                        Name = fileCounter,
-                        Start = pointer,
-                        Length = length
-                    });
+                        files.Add(new Files()
+                        {
+                            Name = fileCounter,
+                            Start = pointer,
+                            Length = length
+                        });
+                    }
+
+                    fileCounter++;
                 }
                 else
                 {
+                    // add to linked list of memory if it has size
                     if (length > 0)
                     {
-                        var space = new FreeSpace { Start = pointer, Length = length };
+                        var space = new FreeMemorySlot { Start = pointer, Length = length };
 
                         lastFreeSpace.Next = space;
                         lastFreeSpace = space;
@@ -69,14 +67,7 @@ namespace ConsoleApp
 
                 }
 
-                var toWrite = file ? fileCounter++ : 0;
-
-
-                for (int pos = 0; pos < length; pos++)
-                {
-                    memory[pointer++] = toWrite;
-                }
-
+                pointer += length;
                 file = !file;
             }
         }
@@ -84,8 +75,7 @@ namespace ConsoleApp
 
         public decimal Part1()
         {
-
-            var currentFreeSpace = freeSpace.Next;
+            var currentFreeSpace = freeSpace.Next; 
             var currentFreeSpaceUsage = 0;
             decimal result = 0;
 
@@ -102,16 +92,13 @@ namespace ConsoleApp
                     {
                         if (currentFreeSpace == null || currentFreeSpace.Start + currentFreeSpaceUsage > pointer)
                             break;
-
-
+                        
                         int currStart = currentFreeSpace.Start + currentFreeSpaceUsage;
                         int currLength = currentFreeSpace.Length - currentFreeSpaceUsage;
-
-
+                        
                         // we fit, copy remainder of file
                         if (length - currentFileMoved <= currLength)
                         {
-
                             var l = length - currentFileMoved;
                             result += (decimal)files[i].Name * (currStart * l + (l * (l - 1)) / 2);
                             currentFreeSpaceUsage += length - currentFileMoved;
@@ -121,17 +108,16 @@ namespace ConsoleApp
                         }
                         else // we dont fit, copy part that fits
                         {
-
                             var l = currLength;
                             result += (decimal)files[i].Name * (currStart * l + (l * (l - 1)) / 2);
                             currentFileMoved += currLength;
                             currentFreeSpace = currentFreeSpace.Next;
                             currentFreeSpaceUsage = 0;
                         }
-
                     }
                 }
 
+                // we did not move this part, add it to result from original location
                 if (currentFileMoved < length)
                 {
                     var l = length - currentFileMoved;
@@ -144,7 +130,7 @@ namespace ConsoleApp
             return result;
         }
 
-        FreeSpace[] recalcPointersToFirstFreeeLocation(FreeSpace[] pointers, int maxPointer)
+        void recalcPointersToFirstFreeeLocation(FreeMemorySlot[] pointers, int maxPointer)
         {
             for (int x = 1; x < 10; x++)
             {
@@ -159,16 +145,15 @@ namespace ConsoleApp
                 pointers[x] = c;
             }
 
-            return pointers;
         }
 
         public decimal Part2()
         {
-
             decimal result = 0;
 
-            var pointerToFirstFreeLocation = new FreeSpace?[10];
+            var pointerToFirstFreeLocationOfSize = new FreeMemorySlot?[10];
 
+            // init a list of pointers to first free memory slot of size x
             for (int x = 1; x < 10; x++)
             {
                 var c = freeSpace;
@@ -176,28 +161,31 @@ namespace ConsoleApp
                 while (c != null && c.Length < x)
                     c = c.Next;
 
-                pointerToFirstFreeLocation[x] = c;
+                pointerToFirstFreeLocationOfSize[x] = c;
             }
 
             for (int i = files.Count - 1; i >= 0; i--)
             {
                 var length = files[i].Length;
                 var pointer = files[i].Start;
-                FreeSpace? firstFreeSpace = pointerToFirstFreeLocation[length];
-
+                FreeMemorySlot? firstFreeSpace = pointerToFirstFreeLocationOfSize[length];
 
                 if (firstFreeSpace == null || firstFreeSpace.Start > pointer)
                 {
+                    // we do not move this part, count it from original location
                     result += (decimal)files[i].Name * (pointer * length + (length * (length - 1)) / 2);
                     continue;
                 }
+                
+                // we moved this to the found free space, add to result
                 result += (decimal)files[i].Name * (firstFreeSpace.Start * length + (length * (length - 1)) / 2);
 
-
+                // reduce size and start of current free space
                 firstFreeSpace.Start += length;
                 firstFreeSpace.Length -= length;
 
-                recalcPointersToFirstFreeeLocation(pointerToFirstFreeLocation, pointer);
+                // update pointers to free memory
+                recalcPointersToFirstFreeeLocation(pointerToFirstFreeLocationOfSize, pointer);
             }
 
             return result;
