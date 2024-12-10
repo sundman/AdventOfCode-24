@@ -72,7 +72,6 @@ namespace ConsoleApp
 
             foreach (var direction in directions)
             {
-
                 if (map[currX + direction.X, currY + direction.Y] == currNum + 1)
                 {
                     WalkToAllTops(currX + direction.X, currY + direction.Y, currNum + 1, topsFoundMap);
@@ -94,6 +93,7 @@ namespace ConsoleApp
 
         public decimal Part2()
         {
+            // Perhaps cheating... but doing part1 already produced the answer...
             return topsScored;
         }
     }
