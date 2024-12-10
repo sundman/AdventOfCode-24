@@ -55,8 +55,8 @@ namespace ConsoleApp
             new(1, 0), new(0, 1), new(-1, 0), new(0, -1)
         ];
 
+        private int uniqueTopsReached;
         private int topsReached;
-        private int topsScored;
         private bool[,] topsFoundMap;
 
         private void WalkToAllTops(int currX, int currY)
@@ -66,10 +66,10 @@ namespace ConsoleApp
                 if (!topsFoundMap[currX, currY])
                 {
                     topsFoundMap[currX, currY] = true;
-                    topsReached++;
+                    uniqueTopsReached++;
                 }
 
-                topsScored++;
+                topsReached++;
                 return;
             }
 
@@ -86,17 +86,18 @@ namespace ConsoleApp
         {
             foreach (var location in startingLocations)
             {
-                topsFoundMap = new bool[map.GetLength(0), map.GetLength(1)];
+                // reset tops found map, we want to count unique tops by starting location
+                topsFoundMap = new bool[size+2, size+2];
                 WalkToAllTops(location.X, location.Y);
             }
 
-            return topsReached;
-        }
+            return uniqueTopsReached;
+        } 
 
         public decimal Part2()
         {
             // Perhaps cheating... but doing part1 already produced the answer...
-            return topsScored;
+            return topsReached;
         }
     }
 }
