@@ -59,9 +59,9 @@ namespace ConsoleApp
         private int topsScored;
         private bool[,] topsFoundMap;
 
-        private void WalkToAllTops(int currX, int currY, int currNum)
+        private void WalkToAllTops(int currX, int currY)
         {
-            if (currNum == 9)
+            if (map[currX, currY] == 9)
             {
                 if (!topsFoundMap[currX, currY])
                 {
@@ -75,20 +75,19 @@ namespace ConsoleApp
 
             foreach (var direction in directions)
             {
-                if (map[currX + direction.X, currY + direction.Y] == currNum + 1)
+                if (map[currX + direction.X, currY + direction.Y] == map[currX, currY] + 1)
                 {
-                    WalkToAllTops(currX + direction.X, currY + direction.Y, currNum + 1);
+                    WalkToAllTops(currX + direction.X, currY + direction.Y);
                 }
             }
         }
 
         public decimal Part1()
         {
-            topsReached = 0;
             foreach (var location in startingLocations)
             {
                 topsFoundMap = new bool[map.GetLength(0), map.GetLength(1)];
-                WalkToAllTops(location.X, location.Y, 0);
+                WalkToAllTops(location.X, location.Y);
             }
 
             return topsReached;
