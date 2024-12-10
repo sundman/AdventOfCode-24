@@ -4,7 +4,7 @@ using String = System.String;
 
 namespace ConsoleApp
 {
-    internal class Day3 : IDay
+    internal class Day03 : IDay
     {
         private string line;
         public void ReadInput()

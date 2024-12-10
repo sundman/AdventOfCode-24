@@ -2,7 +2,7 @@
 
 namespace ConsoleApp
 {
-    internal class Day1 : IDay
+    internal class Day01 : IDay
     {
         private int[] list1;
         private int[] list2;

@@ -4,7 +4,7 @@ using Microsoft.VisualBasic;
 
 namespace ConsoleApp
 {
-    internal class Day5 : IDay
+    internal class Day05 : IDay
     {
         private Dictionary<int, HashSet<int>> dict;
         private List<List<int>> lists;

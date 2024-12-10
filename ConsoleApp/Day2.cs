@@ -2,7 +2,7 @@
 
 namespace ConsoleApp
 {
-    internal class Day2 : IDay
+    internal class Day02 : IDay
     {
         private List<int>[] list;
         public void ReadInput()

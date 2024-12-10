@@ -10,7 +10,7 @@ Console.WriteLine($"{"Day".PadRight(tabLenght)}{"Parsing".PadRight(tabLenght)}{"
 Console.WriteLine("".PadRight(tabLenght*8, '='));
 var total = new Stopwatch();
 total.Start();
-foreach (var day in days)
+foreach (var day in days.OrderBy(x => x.Name))
 {
     var inst = (IDay)Activator.CreateInstance(day);
 

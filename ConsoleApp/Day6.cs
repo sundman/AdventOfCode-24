@@ -2,7 +2,7 @@
 
 namespace ConsoleApp
 {
-    internal class Day6 : IDay
+    internal class Day06 : IDay
     {
         enum Tile
         {

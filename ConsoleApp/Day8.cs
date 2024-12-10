@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace ConsoleApp
 {
-    internal class Day8 : IDay
+    internal class Day08 : IDay
     {
         private Dictionary<char, List<Point>> antennas;
         private int mapSize;

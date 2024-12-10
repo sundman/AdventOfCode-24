@@ -16,7 +16,7 @@ namespace ConsoleApp
         public FreeMemorySlot? Next;
     }
 
-    internal class Day9 : IDay
+    internal class Day09 : IDay
     {
         private List<Files> files;
         private FreeMemorySlot? freeSpace;

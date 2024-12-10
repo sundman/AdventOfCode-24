@@ -2,7 +2,7 @@
 
 namespace ConsoleApp
 {
-    internal class Day4 : IDay
+    internal class Day04 : IDay
     {
         private string[] data;
         public void ReadInput()

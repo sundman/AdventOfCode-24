@@ -15,15 +15,17 @@ namespace ConsoleApp
 
         private List<Point> startingLocations;
 
+        private int size;
+
         public void ReadInput()
         {
 
             var dir = Debugger.IsAttached ? "Example" : "Input";
             data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
-            var size = data.Length;
+            size = data.Length;
 
             map = new int[size + 2, size + 2];
-            startingLocations = new List<Point>();
+            startingLocations = [];
 
             for (int y = 0; y < data.Length; y++)
             {
@@ -55,8 +57,9 @@ namespace ConsoleApp
 
         private int topsReached;
         private int topsScored;
+        private bool[,] topsFoundMap;
 
-        private void WalkToAllTops(int currX, int currY, int currNum, bool[,] topsFoundMap)
+        private void WalkToAllTops(int currX, int currY, int currNum)
         {
             if (currNum == 9)
             {
@@ -74,7 +77,7 @@ namespace ConsoleApp
             {
                 if (map[currX + direction.X, currY + direction.Y] == currNum + 1)
                 {
-                    WalkToAllTops(currX + direction.X, currY + direction.Y, currNum + 1, topsFoundMap);
+                    WalkToAllTops(currX + direction.X, currY + direction.Y, currNum + 1);
                 }
             }
         }
@@ -84,8 +87,8 @@ namespace ConsoleApp
             topsReached = 0;
             foreach (var location in startingLocations)
             {
-                var found = new bool[map.GetLength(0), map.GetLength(1)];
-                WalkToAllTops(location.X, location.Y, 0, found);
+                topsFoundMap = new bool[map.GetLength(0), map.GetLength(1)];
+                WalkToAllTops(location.X, location.Y, 0);
             }
 
             return topsReached;
