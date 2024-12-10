@@ -22,7 +22,7 @@ namespace ConsoleApp
             data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             var size = data.Length;
 
-            map = new int[data[0].Length + 2, data.Length + 2];
+            map = new int[size + 2, size + 2];
             startingLocations = new List<Point>();
 
             for (int y = 0; y < data.Length; y++)
