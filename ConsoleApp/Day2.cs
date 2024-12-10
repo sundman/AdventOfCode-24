@@ -64,7 +64,6 @@ namespace ConsoleApp
             if (isSafePart1(list))
             {
                 return true;
-
             }
 
             for (var i = 0; i < list.Count; i++)
@@ -75,7 +74,6 @@ namespace ConsoleApp
                 {
                     return true;
                 }
-
             }
 
             return false;

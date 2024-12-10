@@ -168,7 +168,7 @@ namespace ConsoleApp
             {
                 var length = files[i].Length;
                 var pointer = files[i].Start;
-                FreeMemorySlot? firstFreeSpace = pointerToFirstFreeLocationOfSize[length];
+                var firstFreeSpace = pointerToFirstFreeLocationOfSize[length];
 
                 if (firstFreeSpace == null || firstFreeSpace.Start > pointer)
                 {
