@@ -55,32 +55,84 @@ namespace ConsoleApp
             return [a];
         }
 
-        private long BlinkDictionary(Dictionary<long, long> data, int blinks)
+        private Dictionary<long, long> stones;
+        private Dictionary<long, long> afterBlink;
+        private long BlinkDictionary(HashSet<long> input, int blinks)
         {
-            var stones = new Dictionary<long, long>(data);
+            afterBlink = new Dictionary<long, long>();
+            stones = input.ToDictionary(g => g, g => (long)1);
+
+            for (var blink = 0; blink < blinks; blink++)
+            {
+                foreach (var stone in stones)
+                {
+
+                    var newStones = CachedBlinkOnce(stone.Key);
+
+                    foreach (var newStone in newStones)
+                    {
+                        if (!afterBlink.TryAdd(newStone, stone.Value))
+                            afterBlink[newStone] += stone.Value;
+
+                        stones[stone.Key] = 0;
+                    }
+                }
+
+                (stones, afterBlink) = (afterBlink, stones);
+            }
+
+            return stones.Sum(x => x.Value);
+        }
+
+        private Dictionary<long, int> UniqueNumberMap = new Dictionary<long, int>();
+        int UniqueNumberCounter = 0;
+        private const int MaxUniqueNumbers = 5000;
+
+        private int GetIndex(long number)
+        {
+            if (UniqueNumberMap.TryGetValue(number, out var value))
+                return value;
+
+            else UniqueNumberMap[number] = UniqueNumberCounter++;
+
+            return UniqueNumberMap[number];
+        }
+
+
+        private long[] array = new long[MaxUniqueNumbers * 2];
+        private HashSet<long> currentNumbers;
+        private long BlinkArray(HashSet<long> data, int blinks)
+        {
+            currentNumbers = data;
             long result = 0;
             for (var blink = 0; blink < blinks; blink++)
             {
                 result = 0;
-                var afterBlink = new Dictionary<long, long>();
-                foreach (var kvp in stones)
+                var afterBlink = new HashSet<long>();
+                foreach (var number in currentNumbers)
                 {
-                    var i = kvp.Key;
+                    var i = number;
 
                     var newStones = CachedBlinkOnce(i);
 
                     foreach (var stone in newStones)
                     {
-                        if (!afterBlink.TryAdd(stone, kvp.Value))
-                            afterBlink[stone] += kvp.Value;
-                        result += kvp.Value;
+                        var fromIndex = GetIndex(number) + MaxUniqueNumbers * ((blink + 1) % 2);
+                        var toIndex = GetIndex(stone) + MaxUniqueNumbers * (blink % 2);
+
+                        array[toIndex] += array[fromIndex];
+                        result += array[fromIndex];
+                        afterBlink.Add(stone);
                     }
                 }
-                stones = new Dictionary<long, long>(afterBlink);
+
+                currentNumbers = afterBlink;
+                Array.Clear(array, MaxUniqueNumbers * ((blink + 1) % 2), MaxUniqueNumbers);
             }
 
             return result;
         }
+
 
         private Dictionary<long, long> Cache = new();
 
@@ -114,26 +166,23 @@ namespace ConsoleApp
 
         public decimal Part2()
         {
-            var numberCounts = nums.ToDictionary(g => g, g => (long)1);
-            return BlinkDictionary(numberCounts, 75);
+            Array.Clear(array);
+            foreach (var number in nums)
+            {
+                array[GetIndex(number) + MaxUniqueNumbers] = 1;
+            }
 
+            return BlinkArray(nums.ToHashSet(), 75);
         }
 
         public decimal Part1()
         {
-            long result = 0;
-            foreach (var num in nums)
+            foreach (var number in nums)
             {
-                result += BlinkRecursive(num, 25);
-
+                array[GetIndex(number) + MaxUniqueNumbers] = 1;
             }
-            return result;
+
+            return BlinkArray(nums.ToHashSet(), 25);
         }
-
-
-
-
-
-
     }
 }
