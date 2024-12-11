@@ -24,9 +24,10 @@ namespace ConsoleApp
         }
 
 
+        // cache support really provieds miniscule gains. If that....
         Dictionary<long, long[]> blinkCache = new Dictionary<long, long[]>();
-
-        long[] CachedBlinkOnce(long input)
+        
+        long[] BlinkOnceWithCacheSupport(long input)
         {
             if (blinkCache.TryGetValue(input, out var value))
                 return value;
@@ -67,7 +68,7 @@ namespace ConsoleApp
                 foreach (var stone in stones)
                 {
 
-                    var newStones = CachedBlinkOnce(stone.Key);
+                    var newStones = BlinkOnceWithCacheSupport(stone.Key);
 
                     foreach (var newStone in newStones)
                     {
@@ -100,36 +101,37 @@ namespace ConsoleApp
 
 
         private long[] array = new long[MaxUniqueNumbers * 2];
-        private HashSet<long> currentNumbers;
+  
         private long BlinkArray(HashSet<long> data, int blinks)
         {
-            currentNumbers = data;
+            var currentStones = data;
             long result = 0;
+
             for (var blink = 0; blink < blinks; blink++)
             {
+                var readOffset = MaxUniqueNumbers * ((blink + 1) % 2);
+                var writeOffset = MaxUniqueNumbers * (blink % 2);
                 result = 0;
                 var afterBlink = new HashSet<long>();
-                foreach (var number in currentNumbers)
+                foreach (var stone in currentStones)
                 {
-                    var i = number;
+                    var newStones = BlinkOnceWithCacheSupport(stone);
 
-                    var newStones = CachedBlinkOnce(i);
-
-                    foreach (var stone in newStones)
+                    foreach (var newStone in newStones)
                     {
-                        var fromIndex = GetIndex(number) + MaxUniqueNumbers * ((blink + 1) % 2);
-                        var toIndex = GetIndex(stone) + MaxUniqueNumbers * (blink % 2);
+                        var fromIndex = GetIndex(stone) + readOffset;
+                        var toIndex = GetIndex(newStone) + writeOffset;
 
                         array[toIndex] += array[fromIndex];
                         result += array[fromIndex];
-                        afterBlink.Add(stone);
+                        afterBlink.Add(newStone);
                     }
                 }
 
-                currentNumbers = afterBlink;
-                Array.Clear(array, MaxUniqueNumbers * ((blink + 1) % 2), MaxUniqueNumbers);
+                currentStones = afterBlink;
+                // read part will be write part next loop so need to clear it
+                Array.Clear(array, readOffset, MaxUniqueNumbers);
             }
-
             return result;
         }
 
@@ -149,7 +151,7 @@ namespace ConsoleApp
             if (Cache.TryGetValue(storedKey, out var value))
                 return value;
 
-            var result = CachedBlinkOnce(input);
+            var result = BlinkOnceWithCacheSupport(input);
 
             var toReturn = BlinkRecursive(result[0], blinks);
 
