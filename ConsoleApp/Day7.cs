@@ -39,7 +39,7 @@ namespace ConsoleApp
 
             if (allowConcat)
             {
-                // concat if remainder matches
+                // split if remainder matches
                 var divideBy = (long)Math.Pow(10, Math.Floor(Math.Log10(numbers[pos])) + 1);
 
                 if (currSum % divideBy == numbers[pos] && 

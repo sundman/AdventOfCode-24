@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
+using System.Reflection.Emit;
+using System.Reflection.Metadata.Ecma335;
 using System.Xml.XPath;
 
 namespace ConsoleApp
@@ -8,16 +10,12 @@ namespace ConsoleApp
 
     internal class Day11 : IDay
     {
-
         private string[] data;
-
 
         private List<long> nums;
 
-
         public void ReadInput()
         {
-
             var dir = Debugger.IsAttached ? "Example" : "Input";
             data = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
 
@@ -26,67 +24,116 @@ namespace ConsoleApp
         }
 
 
-        private Dictionary<long, long> Rules(Dictionary<long, long> input)
+        Dictionary<long, long[]> blinkCache = new Dictionary<long, long[]>();
+
+        long[] CachedBlinkOnce(long input)
         {
-            var toReturn = new Dictionary<long, long>();
+            if (blinkCache.TryGetValue(input, out var value))
+                return value;
 
-
-            foreach (var kvp in input)
+            long a;
+            if (input == 0)
             {
-                var i = kvp.Key;
-
-                if (i == 0)
-                {
-                    toReturn.TryAdd(1, 0);
-                    toReturn[1] += kvp.Value;
-                    continue;
-                }
-
-
-                var len = Math.Floor(Math.Log10(i)) + 1;
-                if (len % 2 == 0)
-                {
-                    var divideBy = (long)Math.Pow(10, len / 2);
-
-                    toReturn.TryAdd(i / divideBy, 0);
-                    toReturn.TryAdd(i % divideBy, 0);
-                    toReturn[i / divideBy] += kvp.Value;
-                    toReturn[(i % divideBy)] += kvp.Value;
-                    continue;
-                }
-
-                var ii = i * 2024;
-                toReturn.TryAdd(ii, 0);
-                toReturn[ii] += kvp.Value;
-
+                blinkCache.Add(input, [1]);
+                return [1];
             }
 
-            return toReturn;
+            var len = (long)(Math.Log10(input)) + 1;
+            if (len % 2 == 0)
+            {
+                var divideBy = (long)Math.Pow(10, len / 2);
+                a = input / divideBy;
+                var b = input % divideBy;
+
+                blinkCache.Add(input, [a, b]);
+                return [a, b];
+            }
+
+            a = input * 2024;
+
+            blinkCache.Add(input, [a]);
+            return [a];
         }
 
-
-
-        public decimal Part1()
+        private long BlinkDictionary(Dictionary<long, long> data, int blinks)
         {
-            // var list = nums.ToDictionary(); 
-            var numberCounts = nums.ToDictionary(g => g, g => (long)1);
-            for (int i = 0; i < 25; i++)
+            var stones = new Dictionary<long, long>(data);
+            long result = 0;
+            for (var blink = 0; blink < blinks; blink++)
             {
-                numberCounts = Rules(numberCounts);
+                result = 0;
+                var afterBlink = new Dictionary<long, long>();
+                foreach (var kvp in stones)
+                {
+                    var i = kvp.Key;
+
+                    var newStones = CachedBlinkOnce(i);
+
+                    foreach (var stone in newStones)
+                    {
+                        if (!afterBlink.TryAdd(stone, kvp.Value))
+                            afterBlink[stone] += kvp.Value;
+                        result += kvp.Value;
+                    }
+                }
+                stones = new Dictionary<long, long>(afterBlink);
             }
 
-            return numberCounts.Sum(x => x.Value);
+            return result;
+        }
+
+        private Dictionary<long, long> Cache = new();
+
+        private long BlinkRecursive(long input, int blinks)
+        {
+            if (blinks == 0)
+            {
+                return 1;
+            }
+            blinks--;
+
+            var storedKey = (input << 8) + blinks;
+
+            if (Cache.TryGetValue(storedKey, out var value))
+                return value;
+
+            var result = CachedBlinkOnce(input);
+
+            var toReturn = BlinkRecursive(result[0], blinks);
+
+            if (result.Length > 1)
+            {
+                toReturn += BlinkRecursive(result[1], blinks);
+
+            }
+
+            Cache[storedKey] = toReturn;
+
+            return toReturn;
         }
 
         public decimal Part2()
         {
             var numberCounts = nums.ToDictionary(g => g, g => (long)1);
-            for (int i = 0; i < 75; i++)
-            {
-                numberCounts = Rules(numberCounts);
-            }
+            return BlinkDictionary(numberCounts, 75);
 
-            return numberCounts.Sum(x => x.Value);
         }
+
+        public decimal Part1()
+        {
+            long result = 0;
+            foreach (var num in nums)
+            {
+                result += BlinkRecursive(num, 25);
+
+            }
+            return result;
+        }
+
+
+
+
+
+
     }
 }
