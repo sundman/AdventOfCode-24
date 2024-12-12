@@ -101,10 +101,10 @@ namespace ConsoleApp
 
 
         private long[] array = new long[MaxUniqueNumbers * 2];
-  
+        private HashSet<long> currentStones;
         private long BlinkArray(HashSet<long> data, int blinks)
         {
-            var currentStones = data;
+            currentStones = data;
             long result = 0;
 
             for (var blink = 0; blink < blinks; blink++)
@@ -129,8 +129,7 @@ namespace ConsoleApp
                 }
 
                 currentStones = afterBlink;
-                // read part will be write part next loop so need to clear it
-                Array.Clear(array, readOffset, MaxUniqueNumbers);
+                Array.Clear(array, MaxUniqueNumbers * ((blink + 1) % 2), MaxUniqueNumbers);
             }
             return result;
         }
