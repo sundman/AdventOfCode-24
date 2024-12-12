@@ -23,6 +23,7 @@ namespace ConsoleApp
             map = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             size = map.Length;
 
+            regionMap = new Region[size + 2, size + 2];
             taken = new bool[size + 2, size + 2];
             // lets dig a pit of lava around the map to make edge-checks easier (yes, the input is a square)
 
@@ -33,14 +34,23 @@ namespace ConsoleApp
                 taken[0, x] = true;
                 taken[size + 1, x] = true;
             }
+            findregions();
         }
 
-        public static List<(int, int)> Directions = [(1, 0), (-1, 0), (0, 1), (0, -1)];
+        public static List<int[]> Directions = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        private const int X = 0;
+        private const int Y = 1;
 
         private class Region(char name)
         {
             public char Name = name;
-            public List<(int, int)> Coords = new List<(int, int)>();
+            public HashSet<int> Coords = new HashSet<int>();
+
+            public void AddCoord(int[] p)
+            {
+                Coords.Add((p[0] << 8) + p[1]);
+            }
+
 
             public int Area => Coords.Count;
 
@@ -51,9 +61,12 @@ namespace ConsoleApp
                     var toReturn = 0;
                     foreach (var coord in Coords)
                     {
+                        var x = coord >> 8;
+                        var y = coord & 0xFF;
+
                         foreach (var direction in Directions)
                         {
-                            if (!Coords.Contains((coord.Item1 + direction.Item1, coord.Item2 + direction.Item2)))
+                            if (regionMap[x + direction[X] + 1, y + direction[Y] + 1] != this)
                                 toReturn++;
                         }
                     }
@@ -66,95 +79,65 @@ namespace ConsoleApp
             {
                 get
                 {
-
                     var toReturn = 0;
-                    var outSidePerimeter = new bool[size + 2, size + 2, 4];
-                    foreach (var coord in Coords.OrderBy(x => x.Item1).ThenBy(x => x.Item2))
+                    var edgeLookedAt = new bool[size + 2, size + 2, 4];
+
+                    var coords = Coords.Select(x => (int[])[x >> 8, x & 0xFF]).ToList();
+
+                    foreach (var coord in coords.OrderBy(x => x[X]).ThenBy(x => x[Y]))
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            var direction = Directions[i];
-                            var newX = coord.Item1 + direction.Item1;
-                            var newY = coord.Item2 + direction.Item2;
-                            if (!Coords.Contains((newX, newY)))
-                            {
-                                outSidePerimeter[newX + 1, newY + 1, i] = true;
-
-                                bool neigbhourOnPerimeter = false;
-                                foreach (var dir in Directions.Where(newDir => newDir.Item1 != direction.Item1 && newDir.Item2 != direction.Item2))
-                                {
-
-                                    var x = newX + 1 + dir.Item1;
-                                    var y = newY + 1 + dir.Item2;
-
-
-                                    if (outSidePerimeter[x, y, i])
-                                    {
-
-
-                                        neigbhourOnPerimeter = true;
-                                        break;
-                                    }
-                                }
-
-
-                                if (!neigbhourOnPerimeter)
-                                {
-                                    toReturn++;
-
-                                }
-
-                            }
-
+                            toReturn = FindEdgesWithoutNeighboursFoundInThisDirection(i, coord);
                         }
                     }
 
-                    foreach (var coord in Coords.OrderBy(x => x.Item2).ThenBy(x => x.Item1))
+                    foreach (var coord in coords.OrderBy(x => x[Y]).ThenBy(x => x[X]))
                     {
                         for (int i = 2; i < 4; i++)
                         {
-                            var direction = Directions[i];
-                            var newX = coord.Item1 + direction.Item1;
-                            var newY = coord.Item2 + direction.Item2;
-                            if (!Coords.Contains((newX, newY)))
-                            {
-                                outSidePerimeter[newX + 1, newY + 1, i] = true;
-
-                                bool neigbhourOnPerimeter = false;
-                                foreach (var dir in Directions.Where(newDir => newDir.Item1 != direction.Item1 && newDir.Item2 != direction.Item2))
-                                {
-
-                                    var x = newX + 1 + dir.Item1;
-                                    var y = newY + 1 + dir.Item2;
-
-
-                                    if (outSidePerimeter[x, y, i])
-                                    {
-
-
-                                        neigbhourOnPerimeter = true;
-                                        break;
-                                    }
-                                }
-
-
-                                if (!neigbhourOnPerimeter)
-                                {
-                                    toReturn++;
-
-                                }
-
-                            }
-
+                            toReturn = FindEdgesWithoutNeighboursFoundInThisDirection(i, coord);
                         }
                     }
 
                     return toReturn;
+
+                    int FindEdgesWithoutNeighboursFoundInThisDirection(int i, int[] coord)
+                    {
+                        var direction = Directions[i];
+                        var newX = coord[X] + direction[X];
+                        var newY = coord[Y] + direction[Y];
+                        if (regionMap[newX + 1, newY + 1] != this)
+                        {
+                            edgeLookedAt[newX + 1, newY + 1, i] = true;
+
+                            bool neigbhourOnPerimeter = false;
+                            foreach (var dir in Directions.Where(newDir => newDir[X] != direction[X] && newDir[Y] != direction[Y]))
+                            {
+                                var x = newX + 1 + dir[X];
+                                var y = newY + 1 + dir[Y];
+
+                                if (edgeLookedAt[x, y, i])
+                                {
+                                    neigbhourOnPerimeter = true;
+                                    break;
+                                }
+                            }
+                            if (!neigbhourOnPerimeter)
+                            {
+                                toReturn++;
+                            }
+                        }
+
+                        return toReturn;
+                    }
                 }
+
+
             }
         }
 
-
+        static Region[,] regionMap;
         private IList<Region> regions = new List<Region>();
         private bool[,] taken;
         void findregions()
@@ -168,11 +151,8 @@ namespace ConsoleApp
 
                     var ch = map[y][x];
 
-                    taken[x + 1, y + 1] = true;
                     var region = new Region(ch);
                     regions.Add(region);
-                    region.Coords.Add((x, y));
-
                     expandRegion(region, x, y);
 
                 }
@@ -183,36 +163,32 @@ namespace ConsoleApp
         private void expandRegion(Region region, int startx, int starty)
         {
 
+            region.AddCoord([startx, starty]);
+            regionMap[startx + 1, starty + 1] = region;
+            taken[startx + 1, starty + 1] = true;
             foreach (var dir in Directions)
             {
-                var x = startx + dir.Item1;
-                var y = starty + dir.Item2;
+                var x = startx + dir[X];
+                var y = starty + dir[Y];
                 if (!taken[x + 1, y + 1])
                 {
                     if (map[y][x] == region.Name)
                     {
-                        taken[x + 1, y + 1] = true;
-                        region.Coords.Add((x, y));
                         expandRegion(region, x, y);
                     }
                 }
             }
         }
+        
+        public decimal Part1()
+        {
+            return regions.Sum(x => x.Area * x.Perimeter);
+        }
 
         public decimal Part2()
         {
-            //foreach (var region in regions)
-            //    Console.WriteLine($"Region {region.Name} has {region.Sides} sides");
             return regions.Sum(x => x.Area * x.Sides);
         }
 
-        public decimal Part1()
-        {
-            findregions();
-
-
-            return regions.Sum(x => x.Area * x.Perimeter);
-
-        }
     }
 }

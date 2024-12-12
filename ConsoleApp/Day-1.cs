@@ -2,7 +2,7 @@
 
 namespace ConsoleApp
 {
-    internal class Day_1 : IDay
+    internal class Day_1 //: IDay
     {
         private List<long> list;
 
