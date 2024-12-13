@@ -88,8 +88,8 @@ namespace ConsoleApp
             {
                 get
                 {
-                    return perimeterByDirection.Sum(kvp => kvp.Value.Count(x =>
-                          !kvp.Value.Contains(x + 1) && !kvp.Value.Contains(x + (1 << 8))));
+                    return perimeterByDirection.Sum(kvp => kvp.Value.Count(coord =>
+                          !kvp.Value.Contains(coord + 1) && !kvp.Value.Contains(coord + (1 << 8))));
                 }
 
             }
