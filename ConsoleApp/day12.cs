@@ -54,10 +54,16 @@ namespace ConsoleApp
 
             public int Area => Coords.Count;
 
+            private Dictionary<int[], HashSet<int>> perimeterByDirection = new();
+
             public int Perimeter
             {
                 get
                 {
+                    foreach (var direction in Directions)
+                    {
+                        perimeterByDirection[direction] = new HashSet<int>();                    }
+
                     var toReturn = 0;
                     foreach (var coord in Coords)
                     {
@@ -67,7 +73,10 @@ namespace ConsoleApp
                         foreach (var direction in Directions)
                         {
                             if (regionMap[x + direction[X] + 1, y + direction[Y] + 1] != this)
+                            {
+                                perimeterByDirection[direction].Add(coord);
                                 toReturn++;
+                            }
                         }
                     }
 
@@ -79,60 +88,9 @@ namespace ConsoleApp
             {
                 get
                 {
-                    var toReturn = 0;
-                    var edgeLookedAt = new bool[size + 2, size + 2, 4];
-
-                    var coords = Coords.Select(x => (int[])[x >> 8, x & 0xFF]).ToList();
-
-                    foreach (var coord in coords.OrderBy(x => x[X]).ThenBy(x => x[Y]))
-                    {
-                        for (int i = 0; i < 2; i++)
-                        {
-                            toReturn = FindEdgesWithoutNeighboursFoundInThisDirection(i, coord);
-                        }
-                    }
-
-                    foreach (var coord in coords.OrderBy(x => x[Y]).ThenBy(x => x[X]))
-                    {
-                        for (int i = 2; i < 4; i++)
-                        {
-                            toReturn = FindEdgesWithoutNeighboursFoundInThisDirection(i, coord);
-                        }
-                    }
-
-                    return toReturn;
-
-                    int FindEdgesWithoutNeighboursFoundInThisDirection(int i, int[] coord)
-                    {
-                        var direction = Directions[i];
-                        var newX = coord[X] + direction[X];
-                        var newY = coord[Y] + direction[Y];
-                        if (regionMap[newX + 1, newY + 1] != this)
-                        {
-                            edgeLookedAt[newX + 1, newY + 1, i] = true;
-
-                            bool neigbhourOnPerimeter = false;
-                            foreach (var dir in Directions.Where(newDir => newDir[X] != direction[X] && newDir[Y] != direction[Y]))
-                            {
-                                var x = newX + 1 + dir[X];
-                                var y = newY + 1 + dir[Y];
-
-                                if (edgeLookedAt[x, y, i])
-                                {
-                                    neigbhourOnPerimeter = true;
-                                    break;
-                                }
-                            }
-                            if (!neigbhourOnPerimeter)
-                            {
-                                toReturn++;
-                            }
-                        }
-
-                        return toReturn;
-                    }
+                    return perimeterByDirection.Sum(kvp => kvp.Value.Count(x =>
+                          !kvp.Value.Contains(x + 1) && !kvp.Value.Contains(x + (1 << 8))));
                 }
-
 
             }
         }
@@ -179,7 +137,7 @@ namespace ConsoleApp
                 }
             }
         }
-        
+
         public decimal Part1()
         {
             return regions.Sum(x => x.Area * x.Perimeter);
