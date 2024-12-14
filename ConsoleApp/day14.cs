@@ -65,12 +65,8 @@ namespace ConsoleApp
 
             if (!doubleSpot)
             {
-                if (spotsTaken.Contains(xyBit))
+                if (!spotsTaken.Add(xyBit))
                     doubleSpot = true;
-                else
-                {
-                    spotsTaken.Add(xyBit);
-                }
             }
 
         }
