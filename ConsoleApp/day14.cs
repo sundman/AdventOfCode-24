@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ConsoleApp
@@ -49,6 +50,10 @@ namespace ConsoleApp
         const int Y = 1;
         private bool doubleSpot;
 
+        private HashSet<int> hasNeighbour = new HashSet<int>();
+        public static List<int[]> Directions = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+
         private HashSet<int> spotsTaken = new HashSet<int>();
         private void MoveRobot(Robot robot, int steps)
         {
@@ -62,6 +67,17 @@ namespace ConsoleApp
                 robot.Position[Y] += sizeY;
 
             var xyBit = (robot.Position[X] << 16) + robot.Position[Y];
+
+            foreach (var dir in Directions)
+            {
+                var newBit = xyBit + dir[Y] + (dir[X] << 16);
+                if (spotsTaken.Contains(newBit))
+                {
+                    hasNeighbour.Add(xyBit);
+                    hasNeighbour.Add(newBit);
+
+                }
+            }
 
             if (!doubleSpot)
             {
@@ -96,17 +112,27 @@ namespace ConsoleApp
 
         }
 
+      
+
         public decimal Part2()
         {
             //  return 0;
             decimal counter = 0;
+            decimal maxNeighbour = 0;
+
             while (true)
             {
                 doubleSpot = false;
+                hasNeighbour.Clear();
                 spotsTaken.Clear();
                 Robots.ForEach(x => MoveRobot(x, 1));
                 counter++;
+                //if (hasNeighbour.Count > maxNeighbour)
+                //{
+                //    maxNeighbour = hasNeighbour.Count;
 
+                //    Console.WriteLine($"New max neighbours found after {counter} moves: {maxNeighbour}");
+                //}
 
                 if (!doubleSpot)
                 {
@@ -123,7 +149,7 @@ namespace ConsoleApp
                     //    Console.WriteLine();
                     //}
 
-                    return counter; 
+                    return counter;
                 }
             }
 
