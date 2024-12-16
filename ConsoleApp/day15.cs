@@ -243,7 +243,6 @@ namespace ConsoleApp
         #region part2 methods
         private bool CanWalkInDirectionPart2(Direction direction)
         {
-
             // fuck it, split by direction. 
             if (direction == Direction.East || direction == Direction.West)
             {
