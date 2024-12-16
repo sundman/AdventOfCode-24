@@ -13,7 +13,7 @@ namespace ConsoleApp
     {
 
 
-        public static List<int[]> Directions = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        public static List<int[]> Directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
         private const int X = 0;
         private const int Y = 1;
@@ -28,10 +28,9 @@ namespace ConsoleApp
 
         private List<Direction> Moves = [];
 
-        private HashSet<Point> walkable = [];
 
-        private Point Start;
-        private Point End;
+        private Node Start;
+        private Node End;
 
         private int size;
 
@@ -40,6 +39,8 @@ namespace ConsoleApp
             var dir = Debugger.IsAttached ? "Example" : "Input";
             var rows = File.ReadAllLines($"{dir}/{GetType().Name}.txt");
             size = rows.Length;
+
+            NodeMap = new Node[size, size];
             for (int y = 0; y < rows.Length; y++)
             {
                 for (int x = 0; x < rows[y].Length; x++)
@@ -49,26 +50,30 @@ namespace ConsoleApp
                     switch (ch)
                     {
                         case '.':
-                            walkable.Add(new Point(x, y));
+                            NodeMap[x, y] = new Node(x, y);
+                            Nodes.Add(NodeMap[x, y]);
                             break;
                         case 'S':
-                            walkable.Add(new Point(x, y));
-                            Start = new Point(x, y);
+                            NodeMap[x, y] = new Node(x, y);
+                            Start = NodeMap[x, y];
+                            Nodes.Add(NodeMap[x, y]);
                             break;
                         case 'E':
-                            walkable.Add(new Point(x, y));
-                            End = new Point(x, y);
+                            NodeMap[x, y] = new Node(x, y);
+                            End = NodeMap[x, y];
+                            Nodes.Add(NodeMap[x, y]);
                             break;
                     }
                 }
             }
         }
 
-        private class Node
-        {
-            public Point Point;
-            public Node[] Connections = new Node[4];
+        private List<Node> Nodes = [];
 
+        private class Node(int x, int y)
+        {
+            public Point Point = new(x, y);
+            public Node[] Connections = new Node[4];
             public int?[] cheapestByDirection = new int?[4];
             public Node[] sourceForCheapest = new Node[4];
 
@@ -111,75 +116,32 @@ namespace ConsoleApp
 
         private Node[,] NodeMap;
 
-
-
-        private void BuildNodeTreeAndMap()
+        private void BuildNodeTree()
         {
-            NodeMap = new Node[size, size];
 
-            foreach (var point in walkable)
-            {
-                NodeMap[point.X, point.Y] = new Node() { Point = point };
-            }
-
-
-            foreach (var point in walkable)
+            foreach (var node in Nodes)
             {
                 for (int dir = 0; dir < 4; dir++)
                 {
                     {
-                        var newX = point.X + Directions[dir][X];
-                        var newY = point.Y + Directions[dir][Y];
+                        var newX = node.Point.X + Directions[dir][X];
+                        var newY = node.Point.Y + Directions[dir][Y];
                         if (NodeMap[newX, newY] != null)
                         {
-                            NodeMap[point.X, point.Y].Connections[dir] = NodeMap[newX, newY];
+                            NodeMap[node.Point.X, node.Point.Y].Connections[dir] = NodeMap[newX, newY];
                         }
                     }
                 }
             }
 
-            NodeMap[Start.X, Start.Y].cheapestByDirection[0] = 0;
+            NodeMap[Start.Point.X, Start.Point.Y].cheapestByDirection[0] = 0;
+
         }
-
-        //private List<int> scoresThatLeadsToGoal = new List<int>();
-        //private HashSet<Node> alreadyVisitedPoints = new HashSet<Node>();
-
-
-
-        private int deadEndCounter = 0;
-        //private void WalkTheWalk(Node currentPosition, int currentDirection, int currentScore)
-        //{
-        //    if (currentPosition == NodeMap[End.X, End.Y])
-        //    {
-        //        scoresThatLeadsToGoal.Add(currentScore);
-        //        Console.WriteLine($"Found {scoresThatLeadsToGoal.Count} unique paths to end. {scoresThatLeadsToGoal.Min()} being the cheapest.");
-        //    }
-
-        //    alreadyVisitedPoints.Add(currentPosition);
-
-        //    for (int i = 0; i < 4; i++)
-        //    {
-        //        if (currentPosition.Connections[i] != null && !alreadyVisitedPoints.Contains(currentPosition.Connections[i].To))
-        //        {
-        //            var newScore = currentPosition.Connections[i].Cost;
-        //            if (i != currentDirection)
-        //            {
-        //                newScore += 1000;
-        //            }
-
-        //            WalkTheWalk(currentPosition.Connections[i].To, i, currentScore + newScore);
-        //        }
-        //    }
-
-        //    alreadyVisitedPoints.Remove(currentPosition);
-        //}
 
 
         private void FindCheapestPath()
         {
-
-            var edgeNodes = new HashSet<Node> { NodeMap[Start.X, Start.Y] };
-            var lastEdgeNodes = new HashSet<Node>();
+            var edgeNodes = new HashSet<Node> { Start };
             while (edgeNodes.Any())
             {
                 var newEdgeNodes = new HashSet<Node>();
@@ -192,14 +154,10 @@ namespace ConsoleApp
                         if (edgeNode.Connections[i] == null)
                             continue;
 
-                        //if (lastEdgeNodes.Contains(edgeNode.Connections[i]))
-                        //    continue;
-
                         var cost = edgeNode.CostToMoveTo(i);
-                        if ((edgeNode.Connections[i].cheapestByDirection[i] == null || edgeNode.Connections[i].cheapestByDirection[i] > cost))
+                        if ((edgeNode.Connections[i].cheapestByDirection[i] == null
+                             || edgeNode.Connections[i].cheapestByDirection[i] > cost))
                         {
-
-
                             edgeNode.Connections[i].cheapestByDirection[i] = edgeNode.CostToMoveTo(i);
                             edgeNode.Connections[i].sourceForCheapest[i] = edgeNode;
                             newEdgeNodes.Add(edgeNode.Connections[i]);
@@ -207,7 +165,6 @@ namespace ConsoleApp
                     }
                 }
 
-                lastEdgeNodes = edgeNodes;
                 edgeNodes = newEdgeNodes;
             }
 
@@ -216,17 +173,17 @@ namespace ConsoleApp
 
         public decimal Part1()
         {
-            BuildNodeTreeAndMap();
+            BuildNodeTree();
             FindCheapestPath();
 
-            return (decimal)NodeMap[End.X, End.Y].cheapestByDirection.Min();
+            return (decimal)End.cheapestByDirection.Min();
         }
 
         public decimal Part2()
         {
-            RecursiveCountUniqueTilesOfCheapestPath(NodeMap[End.X, End.Y]);
+            RecursiveCountUniqueTilesOfCheapestPath(End, -1);
 
-            print(NodeMap);
+            // print(NodeMap);
             return uniqueNodesVisited.Count;
 
         }
@@ -234,27 +191,20 @@ namespace ConsoleApp
 
 
         HashSet<Node> uniqueNodesVisited = new HashSet<Node>();
-        private void RecursiveCountUniqueTilesOfCheapestPath(Node from)
+        private void RecursiveCountUniqueTilesOfCheapestPath(Node from, int latestDir)
         {
             uniqueNodesVisited.Add(from);
-            //// we have already checked this path, so some looopery is going on
-            //if (!uniqueNodesVisited.Add(from))
-            //    return;
-            //if (from.Point.X == 113 && from.Point.Y == 1)
-            //{
-            //    Console.Write('e');
-            //}
 
-
-            if (from == NodeMap[Start.X, Start.Y])
+            if (from == Start)
                 return;
 
             var minCheapest = from.cheapestByDirection.Min();
 
             for (int i = 0; i < 4; i++)
             {
-                if (from.cheapestByDirection[i] == minCheapest)
-                    RecursiveCountUniqueTilesOfCheapestPath(from.sourceForCheapest[i]);
+                if (from.cheapestByDirection[i] == minCheapest
+                    || (i == latestDir && from.cheapestByDirection[i] == minCheapest + 1000))
+                    RecursiveCountUniqueTilesOfCheapestPath(from.sourceForCheapest[i], i);
             }
         }
 
