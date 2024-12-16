@@ -37,18 +37,18 @@ namespace ConsoleApp
             findregions();
         }
 
-        public static List<int[]> Directions = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        static List<int[]> Directions = [[1, 0], [-1, 0], [0, 1], [0, -1]];
         private const int X = 0;
         private const int Y = 1;
 
         private class Region(char name)
         {
             public char Name = name;
-            public HashSet<int> Coords = new HashSet<int>();
+            private readonly HashSet<int> Coords = new();
 
             public void AddCoord(int[] p)
             {
-                Coords.Add((p[0] << 8) + p[1]);
+                Coords.Add((p[X] << 8) + p[Y]);
             }
 
 
@@ -118,21 +118,21 @@ namespace ConsoleApp
 
         }
 
-        private void expandRegion(Region region, int startx, int starty)
+        private void expandRegion(Region region, int x, int y)
         {
 
-            region.AddCoord([startx, starty]);
-            regionMap[startx + 1, starty + 1] = region;
-            taken[startx + 1, starty + 1] = true;
+            region.AddCoord([x, y]);
+            regionMap[x + 1, y + 1] = region;
+            taken[x + 1, y + 1] = true;
             foreach (var dir in Directions)
             {
-                var x = startx + dir[X];
-                var y = starty + dir[Y];
-                if (!taken[x + 1, y + 1])
+                var newX = x + dir[X];
+                var newY = y + dir[Y];
+                if (!taken[newX + 1, newY + 1])
                 {
-                    if (map[y][x] == region.Name)
+                    if (map[newY][newX] == region.Name)
                     {
-                        expandRegion(region, x, y);
+                        expandRegion(region, newX, newY);
                     }
                 }
             }

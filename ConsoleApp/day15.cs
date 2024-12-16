@@ -122,7 +122,7 @@ namespace ConsoleApp
             foreach (var move in Moves)
             {
                 if (CanWalkInDirectionPart2(move))
-                    MoveAndPushPart2(currentPositionPart2, move);
+                    MoveAndPushPart2(move);
             }
 
             return CalculateGPS(MapPart2);
@@ -192,7 +192,7 @@ namespace ConsoleApp
             }
             return score;
         }
-        
+
         #region part1 methods
 
         private bool CanWalkInDirectionPart1(int[] position, Direction direction)
@@ -256,7 +256,7 @@ namespace ConsoleApp
         private bool CanWalkInDirectionEastWest(Direction direction)
         {
             int moves = 1;
-            
+
             while (true)
             {
                 var newX = currentPositionPart2[X] + Directions[(int)direction][X] * moves;
@@ -278,16 +278,16 @@ namespace ConsoleApp
          */
         private bool CanWalkInDirectionNorthSouth(Direction direction)
         {
-            
+
             var pressurePoints = new List<int> { currentPositionPart2[X] };
-            int moves = 1;
+            var newY = currentPositionPart2[Y];
             while (true)
             {
+                newY += Directions[(int)direction][Y];
                 var newPressurePoints = new List<int>();
+
                 foreach (var pressurePoint in pressurePoints)
                 {
-
-                    var newY = currentPositionPart2[Y] + Directions[(int)direction][Y] * moves;
                     if (MapPart2[pressurePoint, newY] == Tile.Empty)
                         continue;
 
@@ -312,20 +312,19 @@ namespace ConsoleApp
 
                 pressurePoints = newPressurePoints;
 
-                moves++;
             }
         }
 
-        private void MoveAndPushPart2(int[] position, Direction direction)
+        private void MoveAndPushPart2(Direction direction)
         {
             // fuck it, split by direction. 
             if (direction == Direction.East || direction == Direction.West)
             {
-                MoveAndPushEastWest(position, direction);
+                MoveAndPushEastWest(currentPositionPart2, direction);
             }
             else
 
-                MoveAndPushNorthSouth(position, direction);
+                MoveAndPushNorthSouth(currentPositionPart2, direction);
         }
 
         /*
@@ -336,16 +335,14 @@ namespace ConsoleApp
         private void MoveAndPushNorthSouth(int[] position, Direction direction)
         {
             var thingsToMoveToNextRow = new List<Tuple<int, Tile>>();
-
-            int moves = 1;
-
+            
             currentPositionPart2[Y] += Directions[(int)direction][Y];
             var currX = currentPositionPart2[X];
             var currY = currentPositionPart2[Y];
 
             // special case for first iteration, we only want to move the dude which means an empty space
-            thingsToMoveToNextRow.Add(new (currX, Tile.Empty));
-            
+            thingsToMoveToNextRow.Add(new(currX, Tile.Empty));
+
             while (thingsToMoveToNextRow.Any())
             {
                 var newPressurePoints = new List<Tuple<int, Tile>>();
