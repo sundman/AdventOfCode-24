@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
 using MathNet.Numerics.RootFinding;
 
@@ -73,38 +74,16 @@ namespace ConsoleApp
         private class Node(int x, int y)
         {
             public Point Point = new(x, y);
+
+            public int? cheapest;
+            public int? cheapestDirection;
             public Node[] Connections = new Node[4];
-            public int?[] cheapestByDirection = new int?[4];
-            public Node[] sourceForCheapest = new Node[4];
 
             public int CostToMoveTo(int direction)
             {
-                var min = -1;
-
-
-                int? costSameDirection = cheapestByDirection[direction] >= 0 ? cheapestByDirection[direction] : null;
-
-                int? cheapestAnyOtherDirection = null;
-                for (int i = 0; i < 4; i++)
-                {
-                    if (i == direction || cheapestByDirection[i] == null)
-                        continue;
-
-
-                    if (!cheapestAnyOtherDirection.HasValue)
-                        cheapestAnyOtherDirection = cheapestByDirection[i];
-                    else
-                        cheapestAnyOtherDirection = cheapestAnyOtherDirection < cheapestByDirection[i] ? cheapestAnyOtherDirection : cheapestByDirection[i];
-
-                }
-
-                if (!costSameDirection.HasValue)
-                    return cheapestAnyOtherDirection.Value + 1001;
-
-                if (!cheapestAnyOtherDirection.HasValue)
-                    return costSameDirection.Value + 1;
-
-                return (costSameDirection.Value + 1) < (cheapestAnyOtherDirection.Value + 1001) ? (costSameDirection.Value + 1) : (cheapestAnyOtherDirection.Value + 1001);
+                if (direction == cheapestDirection)
+                    return cheapest.Value + 1;
+                return cheapest.Value + 1001;
             }
         }
 
@@ -134,41 +113,44 @@ namespace ConsoleApp
                 }
             }
 
-            NodeMap[Start.Point.X, Start.Point.Y].cheapestByDirection[0] = 0;
+            Start.cheapest = 0;
+            Start.cheapestDirection = 0;
 
         }
+
 
 
         private void FindCheapestPath()
         {
-            var edgeNodes = new HashSet<Node> { Start };
+            var edgeNodes = new List<Node> { Start };
             while (edgeNodes.Any())
             {
-                var newEdgeNodes = new HashSet<Node>();
 
-                foreach (var edgeNode in edgeNodes)
+                var edgeNode = edgeNodes.OrderBy(x => x.cheapest).First();
+
+                edgeNodes.Remove(edgeNode);
+
+
+
+                for (int i = 0; i < 4; i++)
                 {
+                    if (edgeNode.Connections[i] == null)
+                        continue;
 
-                    for (int i = 0; i < 4; i++)
+                    var cost = edgeNode.CostToMoveTo(i);
+                    if (edgeNode.Connections[i].cheapest == null || edgeNode.Connections[i].cheapest > cost)
                     {
-                        if (edgeNode.Connections[i] == null)
-                            continue;
-
-                        var cost = edgeNode.CostToMoveTo(i);
-                        if ((edgeNode.Connections[i].cheapestByDirection[i] == null
-                             || edgeNode.Connections[i].cheapestByDirection[i] > cost))
-                        {
-                            edgeNode.Connections[i].cheapestByDirection[i] = edgeNode.CostToMoveTo(i);
-                            edgeNode.Connections[i].sourceForCheapest[i] = edgeNode;
-                            newEdgeNodes.Add(edgeNode.Connections[i]);
-                        }
+                        edgeNode.Connections[i].cheapest = cost;
+                        edgeNode.Connections[i].cheapestDirection = i;
+                        edgeNodes.Add(edgeNode.Connections[i]);
                     }
                 }
 
-                edgeNodes = newEdgeNodes;
             }
 
         }
+
+
 
 
         public decimal Part1()
@@ -176,35 +158,39 @@ namespace ConsoleApp
             BuildNodeTree();
             FindCheapestPath();
 
-            return (decimal)End.cheapestByDirection.Min();
+            return (decimal)End.cheapest;
         }
 
         public decimal Part2()
         {
-            RecursiveCountUniqueTilesOfCheapestPath(End, -1);
+            RecursiveCountUniqueTilesOfCheapestPath(End, End);
 
-            // print(NodeMap);
+            //  print(NodeMap);
             return uniqueNodesVisited.Count;
 
         }
 
 
 
-        HashSet<Node> uniqueNodesVisited = new HashSet<Node>();
-        private void RecursiveCountUniqueTilesOfCheapestPath(Node from, int latestDir)
+        HashSet<Node> uniqueNodesVisited = new();
+        private void RecursiveCountUniqueTilesOfCheapestPath(Node from, Node last)
         {
             uniqueNodesVisited.Add(from);
 
             if (from == Start)
                 return;
 
-            var minCheapest = from.cheapestByDirection.Min();
 
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
-                if (from.cheapestByDirection[i] == minCheapest
-                    || (i == latestDir && from.cheapestByDirection[i] == minCheapest + 1000))
-                    RecursiveCountUniqueTilesOfCheapestPath(from.sourceForCheapest[i], i);
+                if (from.Connections[i] == null)
+                    continue;
+
+                if (from.Connections[i].cheapest == from.cheapest - 1 ||
+                    from.Connections[i].cheapest == last.cheapest - 2 || // stupid special rule, but it could be a T-junction
+                   from.Connections[i].cheapest == from.cheapest - 1001)
+                    RecursiveCountUniqueTilesOfCheapestPath(from.Connections[i], from);
+
             }
         }
 
