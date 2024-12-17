@@ -13,22 +13,10 @@ namespace ConsoleApp
     internal class Day16 : IDay
     {
 
-
         public static List<int[]> Directions = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
         private const int X = 0;
         private const int Y = 1;
-
-        enum Direction
-        {
-            East,
-            West,
-            South,
-            North
-        }
-
-        private List<Direction> Moves = [];
-
 
         private Node Start;
         private Node End;
@@ -122,16 +110,12 @@ namespace ConsoleApp
 
         private void FindCheapestPath()
         {
-            var edgeNodes = new List<Node> { Start };
+            var edgeNodes = new Queue<Node>();
+            edgeNodes.Enqueue(Start);
+
             while (edgeNodes.Any())
             {
-
-                var edgeNode = edgeNodes.OrderBy(x => x.cheapest).First();
-
-                edgeNodes.Remove(edgeNode);
-
-
-
+                var edgeNode = edgeNodes.Dequeue();
                 for (int i = 0; i < 4; i++)
                 {
                     if (edgeNode.Connections[i] == null)
@@ -142,7 +126,7 @@ namespace ConsoleApp
                     {
                         edgeNode.Connections[i].cheapest = cost;
                         edgeNode.Connections[i].cheapestDirection = i;
-                        edgeNodes.Add(edgeNode.Connections[i]);
+                        edgeNodes.Enqueue(edgeNode.Connections[i]);
                     }
                 }
 
@@ -180,7 +164,6 @@ namespace ConsoleApp
             if (from == Start)
                 return;
 
-
             for (var i = 0; i < 4; i++)
             {
                 if (from.Connections[i] == null)
@@ -190,7 +173,6 @@ namespace ConsoleApp
                     from.Connections[i].cheapest == last.cheapest - 2 || // stupid special rule, but it could be a T-junction
                    from.Connections[i].cheapest == from.cheapest - 1001)
                     RecursiveCountUniqueTilesOfCheapestPath(from.Connections[i], from);
-
             }
         }
 
