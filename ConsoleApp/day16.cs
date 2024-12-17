@@ -118,15 +118,16 @@ namespace ConsoleApp
                 var edgeNode = edgeNodes.Dequeue();
                 for (int i = 0; i < 4; i++)
                 {
-                    if (edgeNode.Connections[i] == null)
+                    var newNode = edgeNode.Connections[i];
+                    if (newNode == null)
                         continue;
 
                     var cost = edgeNode.CostToMoveTo(i);
-                    if (edgeNode.Connections[i].cheapest == null || edgeNode.Connections[i].cheapest > cost)
+                    if (newNode.cheapest == null || newNode.cheapest > cost)
                     {
-                        edgeNode.Connections[i].cheapest = cost;
-                        edgeNode.Connections[i].cheapestDirection = i;
-                        edgeNodes.Enqueue(edgeNode.Connections[i]);
+                        newNode.cheapest = cost;
+                        newNode.cheapestDirection = i;
+                        edgeNodes.Enqueue(newNode);
                     }
                 }
 
