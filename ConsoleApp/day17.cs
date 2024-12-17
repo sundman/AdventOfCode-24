@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Drawing;
+using System.Security.Cryptography;
 
 namespace ConsoleApp
 {
@@ -9,7 +10,7 @@ namespace ConsoleApp
         const int B = 1;
         const int C = 2;
 
-        private int[] Register = new int[3];
+        private long[] Register = new long[3];
 
         private List<int> Output = [];
 
@@ -43,13 +44,12 @@ namespace ConsoleApp
 
         private void bxc(int input)
         {
-
             Register[B] ^= Register[C];
         }
 
         private void outt(int input)
         {
-            Output.Add(combo(input) % 8);
+            Output.Add((int)(combo(input) % 8));
         }
 
         private void bdv(int input)
@@ -68,7 +68,7 @@ namespace ConsoleApp
             Register[C] = num / denom;
         }
 
-        private int combo(int input)
+        private Int64 combo(int input)
         {
             if (input < 4)
                 return input;
@@ -122,50 +122,57 @@ namespace ConsoleApp
             }
         }
 
-        private int FindLowestA()
+        private List<int> RunProgramPart2(Int64 a)
         {
-            var b = Register[B];
-            var c = Register[C];
+            Register[A] = a;
+            Register[B] = 0;
+            Register[C] = 0;
 
-            int testA = 0;
+            Output = new List<int>();
+            CurrentInstructionPointer = 0;
+            RunProgramPart1();
+            return Output;
+        }
 
+        private Int64? FoundA;
 
-            while (true)
+        private void FindFirstPossibleA(Int64 alreadyFoundPart)
+        {
+            if (FoundA.HasValue)
             {
-                Register[A] = testA;
-                Register[B] = b;
-                Register[C] = c;
+                return;
+            }
 
-                Output.Clear();
+            for (int i = 0; i < 8; i++)
+            {
+                // dont allow more leading 0, that leads nowhere
+                if (alreadyFoundPart == 0 && i == 0)
+                    continue;
 
-                CurrentInstructionPointer = 0;
-                RunProgramPart1();
+                var thisNum = (alreadyFoundPart << 3) + i;
 
+                var result = RunProgramPart2(thisNum);
 
-                if (Compare(RawInstructions, Output))
+                if (TailCompare(result, RawInstructions))
                 {
-                    return testA;
+                    if (result.Count == RawInstructions.Count)
+                    {
+                        FoundA = thisNum;
+                        return;
+                    }
+
+                    FindFirstPossibleA(thisNum);
                 }
-
-                testA++;
-
-
-                if (testA % 100000 == 0)
-                {
-                    Console.WriteLine($"Tested A {testA}");
-                }
-
             }
         }
 
-        private bool Compare(List<int> a, List<int> b)
+        private bool TailCompare(List<int> a, List<int> b)
         {
-            if (a.Count != b.Count)
-                return false;
+            var indexDiff = b.Count - a.Count;
 
             for (int i = 0; i < a.Count; i++)
             {
-                if (a[i] != b[i])
+                if (a[i] != b[i + indexDiff])
                     return false;
             }
 
@@ -175,17 +182,21 @@ namespace ConsoleApp
         public decimal Part1()
         {
             RunProgramPart1();
-            Console.WriteLine(String.Join(',', Output));
-            return 0;
+
+            decimal result = 0;
+            for (int i = 0; i < Output.Count; i++)
+            {
+                result = result * 10 + Output[i];
+            }
+
+            return result;
         }
 
         public decimal Part2()
         {
+            FindFirstPossibleA(0);
 
-            return FindLowestA();
-
-
-
+            return FoundA.Value;
         }
 
 

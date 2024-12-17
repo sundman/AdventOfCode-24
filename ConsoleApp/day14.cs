@@ -68,16 +68,15 @@ namespace ConsoleApp
 
             var xyBit = (robot.Position[X] << 16) + robot.Position[Y];
 
-            foreach (var dir in Directions)
-            {
-                var newBit = xyBit + dir[Y] + (dir[X] << 16);
-                if (spotsTaken.Contains(newBit))
-                {
-                    hasNeighbour.Add(xyBit);
-                    hasNeighbour.Add(newBit);
-
-                }
-            }
+            //foreach (var dir in Directions)
+            //{
+            //    var newBit = xyBit + dir[Y] + (dir[X] << 16);
+            //    if (spotsTaken.Contains(newBit))
+            //    {
+            //        hasNeighbour.Add(xyBit);
+            //        hasNeighbour.Add(newBit);
+            //    }
+            //}
 
             if (!doubleSpot)
             {
@@ -89,9 +88,6 @@ namespace ConsoleApp
 
         public decimal Part1()
         {
-            decimal result = 0;
-
-
 
             var robots = Robots.Select(x => x.Clone());
 
@@ -118,42 +114,21 @@ namespace ConsoleApp
         {
             //  return 0;
             decimal counter = 0;
-            decimal maxNeighbour = 0;
+           // decimal maxNeighbour = 0;
 
             while (true)
             {
                 doubleSpot = false;
-                hasNeighbour.Clear();
+              //  hasNeighbour.Clear();
                 spotsTaken.Clear();
                 Robots.ForEach(x => MoveRobot(x, 1));
                 counter++;
-                //if (hasNeighbour.Count > maxNeighbour)
-                //{
-                //    maxNeighbour = hasNeighbour.Count;
-
-                //    Console.WriteLine($"New max neighbours found after {counter} moves: {maxNeighbour}");
-                //}
-
+               
                 if (!doubleSpot)
                 {
-                    //Console.WriteLine($"After {counter} moves map:");
-
-                    //for (int y = 0; y < sizeY; y++)
-                    //{
-                    //    for (int x = 0; x < sizeX; x++)
-                    //    {
-
-                    //        var count = robots.Count(r => r.Position[X] == x && r.Position[Y] == y);
-                    //        Console.Write(count == 0 ? "." : "" + count);
-                    //    }
-                    //    Console.WriteLine();
-                    //}
-
                     return counter;
                 }
             }
-
-
         }
     }
 
