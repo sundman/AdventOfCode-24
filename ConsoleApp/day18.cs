@@ -1,13 +1,5 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.Intrinsics.Arm;
-using System.Security.Cryptography;
-using System.Xml.XPath;
-using MathNet.Numerics.RootFinding;
 
 namespace ConsoleApp
 {
@@ -29,82 +21,77 @@ namespace ConsoleApp
             foreach (var row in rows)
             {
                 var parts = row.Split(',').Select(int.Parse).ToList();
-                Corrupted.Add(new Point(parts[X], parts[Y]));
+                Corrupted.Add(new Point(parts[X] + 1, parts[Y] + 1));
             }
         }
 
 
-        private Dictionary<int, int> cheapestNumberOfStepsDict = new Dictionary<int, int>();
 
-        private HashSet<int> corruptedHash = [];
+        private bool[,] corruptedMap;
 
         private void BuildMap(int mapsize, int numberOfCorruptedNodes)
         {
+            corruptedMap = new bool[mapsize + 2, mapsize + 2];
+
 
             // lets dig a pit of lava around the map to make edge-checks easier (yes, the input is a square)
             for (int x = 0; x < mapsize + 1; x++)
             {
-                corruptedHash.Add((x << 16) + 0);
-                corruptedHash.Add((x << 16) + mapsize + 1);
-                corruptedHash.Add(x);
-                corruptedHash.Add(((mapsize + 1) << 16) + x);
 
+                corruptedMap[x, 0] = true;
+                corruptedMap[x, mapsize + 1] = true;
+                corruptedMap[0, x] = true;
+                corruptedMap[mapsize + 1, x] = true;
             }
 
             for (int i = 0; i < numberOfCorruptedNodes; i++)
             {
                 var point = Corrupted[i];
-                corruptedHash.Add(((point.X + 1) << 16) + point.Y + 1);
+
+                corruptedMap[point.X, point.Y] = true;
             }
 
         }
 
 
-
+        private int[,] costToVisit;
         private void FindCheapestPath(int start, int end, int maxSteps = -1)
         {
+            costToVisit = new int[corruptedMap.GetLength(0), corruptedMap.GetLength(0)];
+
             var edgeNodes = new Queue<int>();
 
-            var cheapestToReachGoal = -1;
 
             edgeNodes.Enqueue(start);
-
-            cheapestNumberOfStepsDict.Clear();
-            cheapestNumberOfStepsDict[start] = 0;
 
             while (edgeNodes.Count != 0)
             {
                 var edgeNode = edgeNodes.Dequeue();
 
-                if (maxSteps > 0 && cheapestNumberOfStepsDict[edgeNode] >= maxSteps)
-                    continue;
+                var x = edgeNode >> 8;
+                var y = edgeNode & 0xFF;
 
-                var cheapestToReachEdge = cheapestNumberOfStepsDict[edgeNode];
+                var numberOfMovesDone = costToVisit[x, y] + 1;
 
-                if (cheapestToReachGoal > 0 && cheapestToReachGoal <= cheapestToReachEdge)
-                    continue;
+                if (maxSteps > 0 && numberOfMovesDone >= maxSteps)
+                    break;
 
-                for (int i = 0; i < 4; i++)
+                foreach (var direction in Directions)
                 {
 
-                    var newNode = edgeNode + (Directions[i][X] << 16) + Directions[i][Y];
+                    var newX = x + direction[X];
+                    var newY = y + direction[Y];
 
-                    if (corruptedHash.Contains(newNode))
+                    if (corruptedMap[newX, newY] || costToVisit[newX, newY] != 0)
                         continue;
 
-                    var costToReachNewNode = cheapestToReachEdge + 1;
+                    costToVisit[newX, newY] = numberOfMovesDone;
 
-                    if (cheapestNumberOfStepsDict.TryGetValue(newNode, out var oldCheapest))
-                    {
-                        if (oldCheapest <= costToReachNewNode)
-                            continue;
-                    }
-
-                    cheapestNumberOfStepsDict[newNode] = costToReachNewNode;
+                    var newNode = (newX << 8) + newY;
 
                     if (newNode == end)
                     {
-                        cheapestToReachGoal = cheapestNumberOfStepsDict[newNode];
+                        return;
                     }
                     else
                     {
@@ -114,30 +101,28 @@ namespace ConsoleApp
             }
         }
 
-
-
-        private void RecursiveFindCheapestPathBack(int current, int end, HashSet<int> nodesVisited, List<int> orderVisited)
+        private void RecursiveFindCheapestPathBack(int current, int end, bool[,] nodesVisited)
         {
-            nodesVisited.Add(current);
-            orderVisited.Add(current);
+            var currX = current >> 8;
+            var currY = current & 0xFF;
 
+            nodesVisited[currX, currY] = true;
             if (current == end)
                 return;
 
-            var currentCost = cheapestNumberOfStepsDict[current];
+            var currentCost = costToVisit[currX, currY];
             for (var i = 0; i < 4; i++)
             {
-                var newNode = current + (Directions[i][X] << 16) + Directions[i][Y];
-                if (cheapestNumberOfStepsDict.ContainsKey(newNode) && cheapestNumberOfStepsDict[newNode] == currentCost - 1)
+                var newX = currX + Directions[i][X];
+                var newY = currY + Directions[i][Y];
+
+                if (!corruptedMap[newX, newY] && costToVisit[newX, newY] == currentCost - 1)
                 {
-                    RecursiveFindCheapestPathBack(newNode, end, nodesVisited, orderVisited);
+                    RecursiveFindCheapestPathBack((newX << 8) + newY, end, nodesVisited);
                     return;
                 }
-
             }
         }
-
-
 
         public decimal Part1()
         {
@@ -145,13 +130,9 @@ namespace ConsoleApp
 
             BuildMap(size, 1024);
 
-            FindCheapestPath((1 << 16) + 1, (size << 16) + size);
+            FindCheapestPath((1 << 8) + 1, (size << 8) + size);
 
-            //   print(size);
-
-
-
-            return cheapestNumberOfStepsDict[(size << 16) + size];
+            return costToVisit[size, size];
         }
 
         public decimal Part2()
@@ -161,83 +142,81 @@ namespace ConsoleApp
             while (true)
             {
                 // find shortest path
-                var shortest = new HashSet<int>();
-                var orderVisited = new List<int>();
-                RecursiveFindCheapestPathBack((size << 16) + size, (1 << 16) + 1, shortest, orderVisited);
+                var shortest = new bool[corruptedMap.GetLength(0), corruptedMap.GetLength(0)];
+                RecursiveFindCheapestPathBack((size << 8) + size, (1 << 8) + 1, shortest);
 
                 // drop corrupt bytes until we break shortest path
                 while (true)
                 {
                     var newPoint = Corrupted[currentIndex++];
-                    var newHash = ((newPoint.X + 1) << 16) + newPoint.Y + 1;
 
-                    corruptedHash.Add(newHash);
+                    corruptedMap[newPoint.X, newPoint.Y] = true;
 
-                    if (shortest.Contains(newHash))
+                    if (shortest[newPoint.X, newPoint.Y])
                     {
-                        if (!orderVisited.Contains(newHash))
-                            break;
+                        // try to mend the path by finding new route between the 2 points this disconnected
+                        var mendPoints = new List<int>();
+                        foreach (var direction in Directions)
+                        {
+                            var newX = newPoint.X + direction[X];
+                            var newY = newPoint.Y + direction[Y];
 
-                        // lets try to mend it by trying to find a path from the neighbours of this break in the path
-                        var index = orderVisited.IndexOf(newHash);
-                        var start = orderVisited[index - 1];
-                        var end = orderVisited[index + 1];
+                            if (shortest[newX, newY] && !corruptedMap[newX, newY])
+                            {
+                                mendPoints.Add((newX << 8) + newY);
+                            }
+                        }
 
-                        FindCheapestPath(start, end, 35);
-                        if (!cheapestNumberOfStepsDict.ContainsKey(end))
-                            break;
+                        // only try to mend if we have exactly 2 neighbours to the impact.
+                        // otherwise we might find some old mendings and try to connect bits that are on same side
+                        if (mendPoints.Count == 2)
+                        {
+                            FindCheapestPath(mendPoints[0], mendPoints[1], 35);
 
-                        // we must add these new nodes to the step
-                        var newShortest = new HashSet<int>();
-                        RecursiveFindCheapestPathBack(start, end, newShortest, new List<int>());
+                            if (costToVisit[mendPoints[1] >> 8, mendPoints[1] & 0xff] == 0)
+                                break;
 
-                        foreach (var item in newShortest)
-                            shortest.Add(item);
+                            // we do this to add the new route to the shortest list
+                            RecursiveFindCheapestPathBack(mendPoints[1], mendPoints[0], shortest);
+
+                        }
                     }
                 }
 
                 // recheck if we broke the map
-                FindCheapestPath((1 << 16) + 1, (size << 16) + size);
-
-                // we cant reach goal any longer
-                if (!cheapestNumberOfStepsDict.ContainsKey((size << 16) + size))
+                FindCheapestPath((1 << 8) + 1, (size << 8) + size);
+                if (costToVisit[size, size] == 0)
                     break;
             }
 
             var breakingPoint = Corrupted[currentIndex - 1];
 
-            return breakingPoint.X * 1000000 + breakingPoint.Y;
+            return (breakingPoint.X - 1) * 1000000 + (breakingPoint.Y);
         }
 
 
 
-        private void print(int size)
+        // debugging friend
+        private void print(bool[,] corrupted, bool[,] visited)
         {
             Console.WriteLine();
-            for (int y = 0; y < size + 2; y++)
+            decimal score = 0;
+            for (int y = 0; y < corrupted.GetLength(1); y++)
             {
-                for (int x = 0; x < size + 2; x++)
+
+                for (int x = 0; x < corrupted.GetLength(0); x++)
                 {
-                    var coord = (x << 16) + y;
-
-                    if (corruptedHash.Contains(coord))
-                    {
-                        Console.Write('#');
-                    }
-
-                    else if (cheapestNumberOfStepsDict.ContainsKey(coord))
-                    {
-                        Console.Write('O');
-                    }
+                    if (corrupted[x, y])
+                        Console.Write("#");
+                    else if (visited[x, y])
+                        Console.Write("O");
                     else
-                        Console.Write('.');
-                }
+                        Console.Write(".");
 
+                }
                 Console.WriteLine();
             }
-
         }
-
     }
 
 
