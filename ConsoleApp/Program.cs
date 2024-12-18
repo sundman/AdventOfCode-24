@@ -32,32 +32,7 @@ foreach (var day in days.OrderBy(x => x.Name))
     Console.WriteLine(
         $"{day.Name.PadRight(tabLenght)}{$"{inputms} ms".PadRight(tabLenght)}{$"{part1ms} ms".PadRight(tabLenght)}{$"{part2ms} ms".PadRight(tabLenght)}{$"{part1}".PadRight(tabLenght * 2)}{$"{part2}".PadRight(tabLenght * 2)}");
 
-
 }
 Console.WriteLine();
 Console.WriteLine($"Total runtime: {total.ElapsedMilliseconds} ms");
-Console.ReadLine();
-
-//var day = new Day8();
-
-//Console.WriteLine($"{day.GetType().Name}");
-//var total = new Stopwatch();
-//var timer = new Stopwatch();
-//total.Start();
-//timer.Start();
-//day.ReadInput();
-//timer.Stop();
-//Console.WriteLine($"Input read+parsed:{timer.ElapsedMilliseconds} ms {timer.ElapsedTicks} ticks");
-//timer.Restart();
-//var part1 = day.Part1();
-//timer.Stop();
-//Console.WriteLine($"Part1 answer: {part1}");
-//Console.WriteLine($"Part1 time: {timer.ElapsedMilliseconds} ms {timer.ElapsedTicks} ticks");
-//timer.Restart();
-//var part2 = day.Part2();
-//timer.Stop();
-//Console.WriteLine($"Part2 answer: {part2}");
-//Console.WriteLine($"Part2 time: {timer.ElapsedMilliseconds} ms {timer.ElapsedTicks} ticks");
-//Console.WriteLine($"Total time including writing these messages: {total.ElapsedMilliseconds} ms");
-
 Console.ReadLine();
