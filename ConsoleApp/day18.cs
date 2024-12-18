@@ -69,6 +69,7 @@ namespace ConsoleApp
 
             edgeNodes.Enqueue(start);
 
+            cheapestNumberOfStepsDict.Clear();
             cheapestNumberOfStepsDict[start] = 0;
 
             while (edgeNodes.Count != 0)
@@ -182,7 +183,6 @@ namespace ConsoleApp
                         var start = orderVisited[index - 1];
                         var end = orderVisited[index + 1];
 
-                        cheapestNumberOfStepsDict.Clear();
                         FindCheapestPath(start, end, 35);
                         if (!cheapestNumberOfStepsDict.ContainsKey(end))
                             break;
@@ -197,7 +197,6 @@ namespace ConsoleApp
                 }
 
                 // recheck if we broke the map
-                cheapestNumberOfStepsDict.Clear();
                 FindCheapestPath((1 << 16) + 1, (size << 16) + size);
 
                 // we cant reach goal any longer
