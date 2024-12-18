@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 
 namespace ConsoleApp
 {
+    
+
     internal class Day17 : IDay
     {
         private const int A = 0;
@@ -16,6 +18,7 @@ namespace ConsoleApp
 
         private List<Action<int>> operators;
 
+        #region operators
         private void adv(int input)
         {
             var num = Register[A];
@@ -75,6 +78,7 @@ namespace ConsoleApp
 
             return Register[input - 4];
         }
+        #endregion
 
         private int CurrentInstructionPointer = 0;
 
@@ -184,9 +188,10 @@ namespace ConsoleApp
             RunProgramPart1();
 
             decimal result = 0;
-            for (int i = 0; i < Output.Count; i++)
+            // stupid answer want comma separated string, this is what it gets.
+            foreach (var num in Output)
             {
-                result = result * 10 + Output[i];
+                result = result * 10 + num;
             }
 
             return result;
