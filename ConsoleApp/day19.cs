@@ -8,6 +8,7 @@ namespace ConsoleApp
         // white (w), blue (u), black (b), red (r), or green (g)
         enum color
         {
+            none,
             white,
             blue,
             black,
@@ -26,13 +27,14 @@ namespace ConsoleApp
                 case 'g': return color.green;
             }
 
-            throw new Exception("dont do this to me");
+            return color.none;
         }
 
         private List<string> parts;
         private List<string> inputs = [];
+        
         private SortedSet<string> sortedParts = [];
-        private SortedSet<decimal> sortedInts = [];
+        private HashSet<decimal> sortedInts = [];
 
         private int maxPartLength;
         public void ReadInput()
@@ -52,6 +54,20 @@ namespace ConsoleApp
             {
                 sortedInts.Add(stringToNum(part));
             }
+        }
+
+
+      
+
+        private decimal colorArrayToNum(color[] colorArray)
+        {
+            long num = 0;
+            foreach (var color in colorArray)
+            {
+                num = (num << 3) + (long)color;
+            }
+
+            return num;
         }
 
         private decimal stringToNum(string input)
@@ -161,8 +177,8 @@ namespace ConsoleApp
                 var subStr = toTest.Substring(0, i);
 
                 var num = stringToNum(subStr);
-                if (sortedParts.Contains(subStr))
-                 //   if (sortedInts.Contains(num))
+                //if (sortedParts.Contains(subStr))
+                if (sortedInts.Contains(num))
                 {
                     var tail = toTest.Substring(subStr.Length, toTest.Length - subStr.Length);
 
