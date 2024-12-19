@@ -2,7 +2,7 @@
 
 namespace ConsoleApp
 {
-    internal class Day2022_11 : IDay
+    internal class Day2022_11 
     {
 
         class Monkey

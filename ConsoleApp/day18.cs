@@ -21,6 +21,8 @@ namespace ConsoleApp
             foreach (var row in rows)
             {
                 var parts = row.Split(',').Select(int.Parse).ToList();
+
+                // we shift our map 1+1 since we surround it with corrupt bytes to not have to do edge checks
                 Corrupted.Add(new Point(parts[X] + 1, parts[Y] + 1));
             }
         }
