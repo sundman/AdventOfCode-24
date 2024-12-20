@@ -6,7 +6,7 @@ namespace ConsoleApp
     internal class Day19 : IDay
     {
         // white (w), blue (u), black (b), red (r), or green (g)
-        enum color
+        public enum color
         {
             none,
             white,
@@ -16,7 +16,7 @@ namespace ConsoleApp
             green
         }
 
-        color mapChar(char c)
+        public static color mapChar(char c)
         {
             switch (c)
             {
@@ -32,9 +32,8 @@ namespace ConsoleApp
 
         private List<string> parts;
         private List<string> inputs = [];
-        
-        private SortedSet<string> sortedParts = [];
-        private HashSet<decimal> sortedInts = [];
+
+        //  private SortedSet<string> sortedParts = [];
 
         private int maxPartLength;
         public void ReadInput()
@@ -44,33 +43,23 @@ namespace ConsoleApp
 
             parts = rows[0].Split(',', StringSplitOptions.TrimEntries).ToList();
             inputs = rows.Skip(2).ToList();
-            sortedParts = new SortedSet<string>(parts);
 
-            maxPartLength = sortedParts.Max(x => x.Length);
-
+            maxPartLength = 0;
 
 
-            foreach (var part in sortedParts)
+
+            foreach (var part in parts)
             {
-                sortedInts.Add(stringToNum(part));
+                if (part.Length > maxPartLength)
+                    maxPartLength = part.Length;
+
+                allowedSubstrings.Add(stringToNum(part));
             }
         }
 
+        private HashSet<decimal> allowedSubstrings = [];
 
-      
-
-        private decimal colorArrayToNum(color[] colorArray)
-        {
-            long num = 0;
-            foreach (var color in colorArray)
-            {
-                num = (num << 3) + (long)color;
-            }
-
-            return num;
-        }
-
-        private decimal stringToNum(string input)
+        public static long stringToNum(string input)
         {
             long num = 0;
             foreach (var ch in input)
@@ -81,6 +70,20 @@ namespace ConsoleApp
 
             return num;
         }
+
+
+        public static decimal colorArrayToNum(color[] colorArray)
+        {
+            long num = 0;
+            foreach (var color in colorArray)
+            {
+                num = (num << 3) + (long)color;
+            }
+
+            return num;
+        }
+
+       
 
 
 
@@ -101,7 +104,8 @@ namespace ConsoleApp
             {
                 var subStr = toTest.Substring(0, i);
 
-                if (sortedParts.Contains(subStr))
+                var num = stringToNum(subStr);
+                if (allowedSubstrings.Contains(num))
                 {
 
                     var tail = toTest.Substring(subStr.Length, toTest.Length - subStr.Length);
@@ -141,7 +145,8 @@ namespace ConsoleApp
                     for (int i = 1; i <= maxPartLength && i <= item.Key.Length; i++)
                     {
                         var subStr = item.Key.Substring(0, i);
-                        if (sortedParts.Contains(subStr))
+                        var num = stringToNum(subStr);
+                        if (allowedSubstrings.Contains(num))
                         {
                             if (subStr.Length == item.Key.Length)
                                 result += item.Value;
@@ -162,7 +167,9 @@ namespace ConsoleApp
             return result;
         }
 
+
         private Dictionary<string, decimal> part2Cache = [];
+        private Dictionary<long, decimal> part2ShortCache = [];
         private decimal part2Test(string toTest)
         {
             if (string.IsNullOrEmpty(toTest))
@@ -177,8 +184,7 @@ namespace ConsoleApp
                 var subStr = toTest.Substring(0, i);
 
                 var num = stringToNum(subStr);
-                //if (sortedParts.Contains(subStr))
-                if (sortedInts.Contains(num))
+                if (allowedSubstrings.Contains(num))
                 {
                     var tail = toTest.Substring(subStr.Length, toTest.Length - subStr.Length);
 
