@@ -88,6 +88,9 @@
 	  <Content Include="Example\day2023_19.txt">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="Example\day21.txt">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Example\day_1.txt">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
@@ -152,6 +155,9 @@
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Input\day2023_19.txt">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Input\day21.txt">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Input\day_1.txt">

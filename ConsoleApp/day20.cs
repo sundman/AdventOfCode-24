@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Xml.Linq;
 
@@ -174,14 +175,14 @@ namespace ConsoleApp
                     if (win < 0)
                         continue;
 
-                    if (!count.ContainsKey(win))
-                        count[win] = 0;
 
-                    count[win]++;
 
                     if (win >= goalGain)
                     {
                         toReturn++;
+
+                        count.TryAdd(win, 0);
+                        count[win]++;
                     }
 
                     //var minByCheat = node.AccessibleByCheat
@@ -224,17 +225,57 @@ namespace ConsoleApp
             BuildNodeTree();
             FindStepsFromGoal();
 
-            print(NodeMap);
+            // print(NodeMap);
             return FindCheatsGainingAtLeast(100);
 
-            return (decimal)Start.distanceFromGoal;
         }
+
+        int DistanceBetweenNodes(Node a, Node b)
+        {
+            return Math.Abs(a.Point.X - b.Point.X) + Math.Abs(a.Point.Y - b.Point.Y);
+        }
+
 
         public decimal Part2()
         {
+            int maxCheat = 20;
+            int countCheatsOfAtLeast = 100;
+            decimal toReturn = 0;
+            Dictionary<int, int> count = [];
+            var roads = Nodes.Where(x => x.Type == Type.Road)
+                .OrderBy(x => x.distanceFromGoal).ToArray();
 
-            //  print(NodeMap);
-            return 0;
+            for (int i = 0; i < roads.Length - countCheatsOfAtLeast - 2; i++)
+            {
+                var start = roads[i];
+                
+                var startDistanceFromGoal = start.distanceFromGoal.Value;
+                
+                for (int j = i + countCheatsOfAtLeast + 2; j < roads.Length; j++)
+                {
+                    var target = roads[j];
+                    var distance = DistanceBetweenNodes(start, target);
+                    if (distance > maxCheat)
+                        continue;
+
+                    var gains = target.distanceFromGoal.Value - startDistanceFromGoal - distance;
+
+                    if (gains < countCheatsOfAtLeast)
+                        continue;
+
+                    toReturn++;
+
+                    //count.TryAdd(gains, 0);
+                    //count[gains]++;
+                }
+            }
+
+            //foreach (var keyValuePair in count.OrderBy(x => x.Key))
+            //{
+            //    Console.WriteLine($"- There are {keyValuePair.Value} cheats that save {keyValuePair.Key} picoseconds.");
+            //}
+
+            return toReturn;
 
         }
 
