@@ -105,10 +105,15 @@ namespace ConsoleApp
 
 
             bool disableXBeforeY = curr[Y] == 0 && goalp[X] == 0;
+            bool disableYBeforeX = curr[X] == 0;
 
             var variation = new List<arrows>();
 
-            if (!disableXBeforeY && (diffx == 0 || diffy == 0))
+
+            if (current == arrows.right && goal == arrows.up)
+                return [arrows.left, arrows.up];
+
+            if (!disableXBeforeY)
             {
                 for (int i = 0; i < absx; i++)
                 {
@@ -123,31 +128,28 @@ namespace ConsoleApp
                 toReturn.Add(variation);
             }
 
-            variation = [];
-            for (int i = 0; i < absy; i++)
+            if (!disableYBeforeX || (diffx == 0 || diffy == 0))
             {
-                variation.Add(diffy > 0 ? arrows.up : arrows.down);
+                variation = [];
+                for (int i = 0; i < absy; i++)
+                {
+                    variation.Add(diffy > 0 ? arrows.up : arrows.down);
+                }
+                for (int i = 0; i < absx; i++)
+                {
+                    variation.Add(diffx > 0 ? arrows.left : arrows.right);
+                }
+                toReturn.Add(variation);
             }
-            for (int i = 0; i < absx; i++)
-            {
-                variation.Add(diffx > 0 ? arrows.left : arrows.right);
-            }
-            toReturn.Add(variation);
 
-            if (toReturn.Count > 2 && current == arrows.A)
-                return toReturn[1];
+            //     if (toReturn.Count > 2 && current == arrows.A)
+            //         return toReturn[1];
 
             return toReturn[0];
         }
 
         private int X = 0;
         private int Y = 1;
-
-        private int[] UP = [0, -1];
-        private int[] DOWN = [1, -1];
-        private int[] RIGHT = [0, 1];
-        private int[] LEFT = [1, 0];
-        private int[] PUSH = [0, 0];
 
 
 
@@ -160,18 +162,11 @@ namespace ConsoleApp
             A = 'A'
         }
 
-        arrows DicrectionToArrowMap(int[] dir)
-        {
-            if (dir == LEFT) return arrows.left;
-            if (dir == RIGHT) return arrows.right;
-            if (dir == UP) return arrows.up;
-            if (dir == DOWN) return arrows.down;
 
-            return arrows.A;
-        }
 
         private Dictionary<string, List<string>> MoveTransformationDictionary = [];
 
+        private Dictionary<string, decimal> UniqueSubstringCount = [];
 
 
         List<List<arrows>> BuildAllVariations(List<List<List<arrows>>> clickVariationsList)
@@ -196,8 +191,71 @@ namespace ConsoleApp
 
         }
 
-        private List<arrows> GetArrowPadMovesLevel2Part2(List<arrows> moves)
+
+        List<string> AddToMoveTransformationDictionary(string start)
         {
+            List<string> toReturn = [];
+
+            var moves = start.Select(x => (arrows)x).ToList();
+
+            moves = GetArrowPadMovesLevel2(moves);
+
+
+            var rest = moves;
+            while (rest.Any())
+            {
+                var indexOfA = rest.IndexOf(arrows.A);
+                var firstPart = rest.Take(indexOfA + 1);
+                rest = rest.Skip(indexOfA + 1).ToList();
+                var str = new string(firstPart.Select(x => (char)x).ToArray());
+                toReturn.Add(str);
+            }
+
+            MoveTransformationDictionary[start] = toReturn;
+
+            return toReturn;
+        }
+
+
+        private void GetArrowPadMovesLevel2Part2(List<arrows> moves, int iterations)
+        {
+            var rest = moves;
+            while (rest.Any())
+            {
+
+                var indexOfA = rest.IndexOf(arrows.A);
+                var firstPart = rest.Take(indexOfA + 1).ToList();
+                rest = rest.Skip(indexOfA + 1).ToList();
+
+                var str = new string(firstPart.Select(x => (char)x).ToArray());
+
+                UniqueSubstringCount.TryAdd(str, 0);
+                UniqueSubstringCount[str] += 1;
+            }
+
+            for (int i = 0; i < iterations; i++)
+            {
+                Dictionary<string, decimal> nextDictionary = [];
+
+                foreach (var kvp in UniqueSubstringCount)
+                {
+                    List<string> dictionaryHit = null;
+
+                    if (!MoveTransformationDictionary.TryGetValue(kvp.Key, out dictionaryHit))
+                    {
+                        dictionaryHit = AddToMoveTransformationDictionary(kvp.Key);
+                    }
+
+
+                    foreach (var newPart in dictionaryHit)
+                    {
+                        nextDictionary.TryAdd(newPart, 0);
+                        nextDictionary[newPart] += UniqueSubstringCount[kvp.Key];
+                    }
+                }
+
+                UniqueSubstringCount = nextDictionary;
+            }
 
         }
 
@@ -206,24 +264,24 @@ namespace ConsoleApp
         {
             var currentPos = arrows.A;
 
-            var variationList = new List<arrows>();
+            var movesList = new List<arrows>();
             foreach (var move in moves)
             {
                 if (currentPos == move)
                 {
-                    variationList.Add(arrows.A);
+                    movesList.Add(arrows.A);
                 }
                 else
                 {
-                    variationList.AddRange(MovesToArrowPadPosition(currentPos, move));
-                    variationList.Add(arrows.A);
+                    movesList.AddRange(MovesToArrowPadPosition(currentPos, move));
+                    movesList.Add(arrows.A);
 
                     currentPos = move;
                 }
             }
 
 
-            return variationList;
+            return movesList;
         }
 
         private List<List<List<arrows>>> GetArrowPadMovesLevel1(string code)
@@ -254,7 +312,7 @@ namespace ConsoleApp
         }
 
 
-        private decimal DoNumpadMoves(string code, int additionaLevels = 1)
+        private List<arrows> MovesAfterStep2(string code)
         {
             var firstLevel = GetArrowPadMovesLevel1(code);
 
@@ -262,7 +320,29 @@ namespace ConsoleApp
             var variations = BuildAllVariations(firstLevel);
 
             List<arrows> shortestSecond = null;
-            List<arrows> shortestFirst = null;
+            foreach (var variation in variations)
+            {
+                var secondLevel = GetArrowPadMovesLevel2(variation);
+
+                //    Console.WriteLine($"{code} variation: {string.Join("", secondLevel.Select(x => (char)x))}");
+                //    Console.WriteLine($"Will turn into {GetArrowPadMovesLevel2(secondLevel).Count} and then {GetArrowPadMovesLevel2(GetArrowPadMovesLevel2(secondLevel)()).Count} ");
+                if (shortestSecond == null || shortestSecond.Count > secondLevel.Count)
+                {
+                    shortestSecond = secondLevel;
+                }
+            }
+
+            return shortestSecond;
+        }
+
+        private List<arrows> MovesAfterStep1(string code)
+        {
+            var firstLevel = GetArrowPadMovesLevel1(code);
+
+
+            var variations = BuildAllVariations(firstLevel);
+
+            List<arrows> shortestSecond = null;
             foreach (var variation in variations)
             {
                 var secondLevel = GetArrowPadMovesLevel2(variation);
@@ -270,28 +350,44 @@ namespace ConsoleApp
 
                 if (shortestSecond == null || shortestSecond.Count > secondLevel.Count)
                 {
-                    shortestFirst = variation;
+                    shortestSecond = secondLevel;
+                }
+            }
+
+            return shortestSecond;
+        }
+
+        private decimal DoNumpadMoves(string code)
+        {
+            var firstLevel = GetArrowPadMovesLevel1(code);
+
+
+            var variations = BuildAllVariations(firstLevel);
+
+            List<arrows> shortestSecond = null;
+            foreach (var variation in variations)
+            {
+                var secondLevel = GetArrowPadMovesLevel2(variation);
+
+
+                if (shortestSecond == null || shortestSecond.Count > secondLevel.Count)
+                {
                     shortestSecond = secondLevel;
                 }
             }
 
             List<arrows> result = shortestSecond;
 
-            for (int i = 0; i < additionaLevels; i++)
-            {
-                result = GetArrowPadMovesLevel2(result);
-                Console.WriteLine($"After {i}: {result.Count} lenth.");
+            result = GetArrowPadMovesLevel2(result);
 
-                Console.WriteLine($"code: {code}: {string.Join("", result.Select(x => (char)x))}");
-            }
 
             var numcode = int.Parse(code.Replace("A", ""));
-            //Console.WriteLine($"code: {code}: {string.Join("", shortestFirst.Select(x => (char)x))}");
-            //Console.WriteLine($"code: {code}: {string.Join("", shortestSecond.Select(x => (char)x))}");
-            //Console.WriteLine($"code: {code}: {string.Join("", thirdLevel.Select(x => (char)x))}");
-            //Console.WriteLine($"code: {numcode}*{thirdLevel.Count}={numcode * thirdLevel.Count}");
+
             return (decimal)numcode * result.Count;
         }
+
+
+
 
         public decimal Part1()
         {
@@ -302,18 +398,46 @@ namespace ConsoleApp
 
         public decimal Part2()
         {
-
-
-            List<arrows> result = [arrows.down];
-            for (int i = 0; i < 25; i++)
+            decimal totalCount = 0;
+            foreach (var code in Codes)
             {
-                result = GetArrowPadMovesLevel2(result);
-                Console.WriteLine($"After {i}: {result.Count} lenth.");
+                var firstLevel = GetArrowPadMovesLevel1(code);
+                var variations = BuildAllVariations(firstLevel);
 
-                //  Console.WriteLine($"code: {code}: {string.Join("", result.Select(x => (char)x))}");
+                //foreach (var variation in variations)
+                //{
+
+                //    //var startMoves = MovesAfterStep2(code); 
+                //    Console.WriteLine();
+                //    Console.WriteLine($"{code} variation: {string.Join("", variation.Select(x => (char)x))}");
+                //    var input = variation;
+                //    for (int i = 1; i < 4; i++)
+                //    {
+                //        input = GetArrowPadMovesLevel2(input);
+                //        UniqueSubstringCount.Clear();
+                //        GetArrowPadMovesLevel2Part2(variation, i);
+
+                //        Console.WriteLine($" {UniqueSubstringCount.Sum(x => x.Value * x.Key.Length)}: " +
+                //                          $"{string.Join("", input.Select(x => (char)x))}");
+                //    }
+
+                //    var numcode = int.Parse(code.Replace("A", ""));
+
+                //    var num = UniqueSubstringCount.Sum(x => x.Value * x.Key.Length);
+                //    totalCount += num * numcode;
+                //}
             }
-            return Codes.Sum(x => DoNumpadMoves(x, 1));
 
+            return totalCount;
+
+
+            // Here are all the counts for 029A all the way to 25: 4, 12, 28, 68, 164, 404, 998, 2482, 6166, 15340, 38154, 94910, 236104, 587312, 1461046, 3634472, 9041286, 22491236, 55949852, 139182252, 346233228, 861298954, 2142588658, 5329959430, 13258941912, 32983284966, 82050061710
+
+            // 866 685 207 341 too low
+            // 1 305 271 414 768 too low
+            // 3 265 640 606 594
+
+            // 723400511121604 wrong
         }
 
 
