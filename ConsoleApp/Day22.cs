@@ -97,8 +97,6 @@ namespace ConsoleApp
 
         public decimal Part2()
         {
-            decimal result = 0;
-            List<Tuple<int, int?>[]> monkeyList = [];
             foreach (var number in StartNumbers)
             {
                 generateDictionary(number);
@@ -107,25 +105,7 @@ namespace ConsoleApp
 
             var max = MonkeyPrices.Max(x => x.Value);
 
-            var kvp = MonkeyPrices.First(x => x.Value == max);
-
-            var key = kvp.Key;
-
-            var part1 = (key & 0xff000000) >> 24;
-            var part2 = (key & 0x00ff0000) >> 16;
-            var part3 = (key & 0x0000ff00) >> 8;
-            var part4 = key & 0x000000ff;
-
-            Console.WriteLine($"{part1 - 10},{part2 - 10},{part3 - 10},{part4 - 10} ");
-
-            // lets check their fucking key
-            // -2,1,-1,3
-
-            key = (-2 + 10) << 24;
-            key += (1 + 10) << 16;
-            key += (-1 + 10) <<8;
-            key += (3 + 10);
-            Console.WriteLine($"Their example key: {MonkeyPrices[key]}");
+           
 
             return max;
         }
