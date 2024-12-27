@@ -55,11 +55,11 @@ namespace ConsoleApp
         }
 
 
-        private Dictionary<int, decimal> MonkeyPrices = new();
+        private decimal[] MonkeyPrices = new decimal[20 * 20 * 20 * 20];
         private void generateDictionary(long number)
         {
             var array = new int[2000];
-            HashSet<int> usedKeys = [];
+            bool[] usedKeys = new bool[20 * 20 * 20 * 20];
 
             int lastNum = (int)(number % 10);
             long current = number;
@@ -75,19 +75,19 @@ namespace ConsoleApp
                 current = next;
 
                 var tail = (int)(next % 10);
-                array[i] = tail - lastNum;
+                array[i] = tail - lastNum + 10;
                 lastNum = tail;
 
                 if (i >= 5)
                 {
-                    var key = (array[i] + 10) +
-                              ((array[i - 1] + 10) << 8) +
-                              ((array[i - 2] + 10) << 16) +
-                              ((array[i - 3] + 10) << 24);
+                    var key = array[i] +
+                              array[i - 1] * 20 +
+                              array[i - 2] * 20 * 20 +
+                              array[i - 3] * 20 * 20 * 20;
 
-                    if (usedKeys.Add(key))
+                    if (!usedKeys[key])
                     {
-                        MonkeyPrices.TryAdd(key, 0);
+                        usedKeys[key] = true;
                         MonkeyPrices[key] += tail;
                     }
                 }
@@ -102,11 +102,7 @@ namespace ConsoleApp
                 generateDictionary(number);
             }
 
-
-            var max = MonkeyPrices.Max(x => x.Value);
-
-           
-
+            var max = MonkeyPrices.Max(x => x);
             return max;
         }
 

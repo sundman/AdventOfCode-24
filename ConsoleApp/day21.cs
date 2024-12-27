@@ -45,14 +45,12 @@ namespace ConsoleApp
             arrowPad[arrows.right] = [2, 1];
         }
 
-        private List<List<arrows>> MovesToNumpadPosition(int currentnum, int goal)
+        private List<arrows> MovesToNumpadPosition(int currentnum, int goal)
         {
-            var toReturn = new List<List<arrows>>();
 
             var curr = numpad[currentnum];
             var goalp = numpad[goal];
 
-            // special rule to not step out of bounds
             bool disableXbeforeY = (currentnum == 0 || currentnum == 10) && goalp[X] == 0;
 
             var diffy = curr[Y] - goalp[Y];
@@ -60,98 +58,95 @@ namespace ConsoleApp
             var diffx = curr[X] - goalp[X];
             var absx = Math.Abs(diffx);
 
+            if (diffx < 0)
+            {
+                disableXbeforeY = true;
+            }
 
-            var subList = new List<arrows>();
-            if (!disableXbeforeY && (diffx != 0 && diffy != 0))
+            if (curr[X] == 0 && goalp[Y] == 3)
+                disableXbeforeY = false;
+
+
+            var moves = new List<arrows>();
+            if (!disableXbeforeY)
             {
                 for (int i = 0; i < absx; i++)
                 {
-                    subList.Add(diffx > 0 ? arrows.left : arrows.right);
+                    moves.Add(diffx > 0 ? arrows.left : arrows.right);
                 }
                 for (int i = 0; i < absy; i++)
                 {
-                    subList.Add(diffy > 0 ? arrows.up : arrows.down);
+                    moves.Add(diffy > 0 ? arrows.up : arrows.down);
                 }
-                toReturn.Add(subList);
+
+                return moves;
             }
 
-            subList = new List<arrows>();
             for (int i = 0; i < absy; i++)
             {
-                subList.Add(diffy > 0 ? arrows.up : arrows.down);
+                moves.Add(diffy > 0 ? arrows.up : arrows.down);
             }
             for (int i = 0; i < absx; i++)
             {
-                subList.Add(diffx > 0 ? arrows.left : arrows.right);
+                moves.Add(diffx > 0 ? arrows.left : arrows.right);
             }
 
-            toReturn.Add(subList);
+            return moves;
 
 
-            return toReturn;
         }
 
 
         private List<arrows> MovesToArrowPadPosition(arrows current, arrows goal)
         {
-            var toReturn = new List<List<arrows>>();
             var curr = arrowPad[current];
             var goalp = arrowPad[goal];
 
-            var diffy = curr[Y] - goalp[Y];
+            var diffy = goalp[Y] - curr[Y];
             var absy = Math.Abs(diffy);
-            var diffx = curr[X] - goalp[X];
+            var diffx = goalp[X] - curr[X];
             var absx = Math.Abs(diffx);
 
 
             bool disableXBeforeY = curr[Y] == 0 && goalp[X] == 0;
-            bool disableYBeforeX = curr[X] == 0;
-
-            var variation = new List<arrows>();
 
 
-            if (current == arrows.right && goal == arrows.up)
-                return [arrows.left, arrows.up];
 
+            if (diffx > 0 && current != arrows.left)
+                disableXBeforeY = true;
+
+
+            var moves = new List<arrows>();
             if (!disableXBeforeY)
             {
                 for (int i = 0; i < absx; i++)
                 {
-                    variation.Add(diffx > 0 ? arrows.left : arrows.right);
+                    moves.Add(diffx > 0 ? arrows.right : arrows.left);
                 }
 
                 for (int i = 0; i < absy; i++)
                 {
-                    variation.Add(diffy > 0 ? arrows.up : arrows.down);
+                    moves.Add(diffy > 0 ? arrows.down : arrows.up);
                 }
 
-                toReturn.Add(variation);
+                return moves;
             }
 
-            if (!disableYBeforeX || (diffx == 0 || diffy == 0))
+            for (int i = 0; i < absy; i++)
             {
-                variation = [];
-                for (int i = 0; i < absy; i++)
-                {
-                    variation.Add(diffy > 0 ? arrows.up : arrows.down);
-                }
-                for (int i = 0; i < absx; i++)
-                {
-                    variation.Add(diffx > 0 ? arrows.left : arrows.right);
-                }
-                toReturn.Add(variation);
+                moves.Add(diffy > 0 ? arrows.down : arrows.up);
+            }
+            for (int i = 0; i < absx; i++)
+            {
+                moves.Add(diffx > 0 ? arrows.right : arrows.left);
             }
 
-            //     if (toReturn.Count > 2 && current == arrows.A)
-            //         return toReturn[1];
+            return moves;
 
-            return toReturn[0];
         }
 
         private int X = 0;
         private int Y = 1;
-
-
 
         private enum arrows
         {
@@ -162,34 +157,9 @@ namespace ConsoleApp
             A = 'A'
         }
 
-
-
         private Dictionary<string, List<string>> MoveTransformationDictionary = [];
 
         private Dictionary<string, decimal> UniqueSubstringCount = [];
-
-
-        List<List<arrows>> BuildAllVariations(List<List<List<arrows>>> clickVariationsList)
-        {
-            List<List<arrows>> toReturn = [];
-
-            // fuck it, this should be done recursive but lets do it grunt stile for now
-            foreach (var button1 in clickVariationsList[0])
-                foreach (var button2 in clickVariationsList[1])
-                    foreach (var button3 in clickVariationsList[2])
-                        foreach (var button4 in clickVariationsList[3])
-                        {
-                            var clicks = new List<arrows>();
-                            clicks.AddRange(button1);
-                            clicks.AddRange(button2);
-                            clicks.AddRange(button3);
-                            clicks.AddRange(button4);
-                            toReturn.Add(clicks);
-                        }
-
-            return toReturn;
-
-        }
 
 
         List<string> AddToMoveTransformationDictionary(string start)
@@ -259,7 +229,6 @@ namespace ConsoleApp
 
         }
 
-
         private List<arrows> GetArrowPadMovesLevel2(List<arrows> moves)
         {
             var currentPos = arrows.A;
@@ -280,13 +249,12 @@ namespace ConsoleApp
                 }
             }
 
-
             return movesList;
         }
 
-        private List<List<List<arrows>>> GetArrowPadMovesLevel1(string code)
+        private List<arrows> GetArrowPadMovesLevel1(string code)
         {
-            List<List<List<arrows>>> clicks = [];
+            List<arrows> clicks = [];
             int currNum = 10;
             foreach (var ch in code)
             {
@@ -303,91 +271,27 @@ namespace ConsoleApp
                 var moves = MovesToNumpadPosition(currNum, newNum);
                 currNum = newNum;
 
-                foreach (var list in moves)
-                    list.Add(arrows.A);
-                clicks.Add(moves);
+                clicks.AddRange(moves);
+                clicks.Add(arrows.A);
             }
 
             return clicks;
         }
 
 
-        private List<arrows> MovesAfterStep2(string code)
-        {
-            var firstLevel = GetArrowPadMovesLevel1(code);
-
-
-            var variations = BuildAllVariations(firstLevel);
-
-            List<arrows> shortestSecond = null;
-            foreach (var variation in variations)
-            {
-                var secondLevel = GetArrowPadMovesLevel2(variation);
-
-                //    Console.WriteLine($"{code} variation: {string.Join("", secondLevel.Select(x => (char)x))}");
-                //    Console.WriteLine($"Will turn into {GetArrowPadMovesLevel2(secondLevel).Count} and then {GetArrowPadMovesLevel2(GetArrowPadMovesLevel2(secondLevel)()).Count} ");
-                if (shortestSecond == null || shortestSecond.Count > secondLevel.Count)
-                {
-                    shortestSecond = secondLevel;
-                }
-            }
-
-            return shortestSecond;
-        }
-
-        private List<arrows> MovesAfterStep1(string code)
-        {
-            var firstLevel = GetArrowPadMovesLevel1(code);
-
-
-            var variations = BuildAllVariations(firstLevel);
-
-            List<arrows> shortestSecond = null;
-            foreach (var variation in variations)
-            {
-                var secondLevel = GetArrowPadMovesLevel2(variation);
-
-
-                if (shortestSecond == null || shortestSecond.Count > secondLevel.Count)
-                {
-                    shortestSecond = secondLevel;
-                }
-            }
-
-            return shortestSecond;
-        }
 
         private decimal DoNumpadMoves(string code)
         {
             var firstLevel = GetArrowPadMovesLevel1(code);
 
+            var secondLevel = GetArrowPadMovesLevel2(firstLevel);
 
-            var variations = BuildAllVariations(firstLevel);
-
-            List<arrows> shortestSecond = null;
-            foreach (var variation in variations)
-            {
-                var secondLevel = GetArrowPadMovesLevel2(variation);
-
-
-                if (shortestSecond == null || shortestSecond.Count > secondLevel.Count)
-                {
-                    shortestSecond = secondLevel;
-                }
-            }
-
-            List<arrows> result = shortestSecond;
-
-            result = GetArrowPadMovesLevel2(result);
-
+            var result = GetArrowPadMovesLevel2(secondLevel);
 
             var numcode = int.Parse(code.Replace("A", ""));
 
             return (decimal)numcode * result.Count;
         }
-
-
-
 
         public decimal Part1()
         {
@@ -395,56 +299,69 @@ namespace ConsoleApp
         }
 
 
-
         public decimal Part2()
         {
             decimal totalCount = 0;
+
+           // debug();
+
             foreach (var code in Codes)
             {
-                var firstLevel = GetArrowPadMovesLevel1(code);
-                var variations = BuildAllVariations(firstLevel);
+                var moves = GetArrowPadMovesLevel1(code);
 
-                //foreach (var variation in variations)
-                //{
+                UniqueSubstringCount.Clear();
+                GetArrowPadMovesLevel2Part2(moves, 25);
 
-                //    //var startMoves = MovesAfterStep2(code); 
-                //    Console.WriteLine();
-                //    Console.WriteLine($"{code} variation: {string.Join("", variation.Select(x => (char)x))}");
-                //    var input = variation;
-                //    for (int i = 1; i < 4; i++)
-                //    {
-                //        input = GetArrowPadMovesLevel2(input);
-                //        UniqueSubstringCount.Clear();
-                //        GetArrowPadMovesLevel2Part2(variation, i);
+                var numcode = int.Parse(code.Replace("A", ""));
 
-                //        Console.WriteLine($" {UniqueSubstringCount.Sum(x => x.Value * x.Key.Length)}: " +
-                //                          $"{string.Join("", input.Select(x => (char)x))}");
-                //    }
+                var num = UniqueSubstringCount.Sum(x => x.Value * x.Key.Length);
+                totalCount += num * numcode;
 
-                //    var numcode = int.Parse(code.Replace("A", ""));
-
-                //    var num = UniqueSubstringCount.Sum(x => x.Value * x.Key.Length);
-                //    totalCount += num * numcode;
-                //}
             }
 
             return totalCount;
 
 
-            // Here are all the counts for 029A all the way to 25: 4, 12, 28, 68, 164, 404, 998, 2482, 6166, 15340, 38154, 94910, 236104, 587312, 1461046, 3634472, 9041286, 22491236, 55949852, 139182252, 346233228, 861298954, 2142588658, 5329959430, 13258941912, 32983284966, 82050061710
-
-            // 866 685 207 341 too low
-            // 1 305 271 414 768 too low
-            // 3 265 640 606 594
-
-            // 723400511121604 wrong
         }
 
+        public void debug()
+        {
+            foreach (var from in Enum.GetValues<arrows>())
+            {
+                foreach (var to in Enum.GetValues<arrows>())
+                {
+                    var moves = MovesToArrowPadPosition(from, to);
+                    Console.WriteLine($"{from} -> {to}: {string.Join(',', moves)}");
+                }
+            }
+
+            foreach (var from in numpad)
+            {
+                foreach (var to in numpad)
+                {
+                    var moves = MovesToNumpadPosition(from.Key, to.Key);
+                    Console.WriteLine($"{from.Key} -> {to.Key}: {string.Join(',', moves)}");
+                }
+            }
+
+            foreach (var code in Codes)
+            {
+                var moves = GetArrowPadMovesLevel1(code);
+
+                Console.WriteLine();
+                Console.WriteLine($"{code} moves: {string.Join("", moves.Select(x => (char)x))}");
+
+                for (int i = 1; i < 5; i++)
+                {
+                    UniqueSubstringCount.Clear();
+                    GetArrowPadMovesLevel2Part2(moves, i);
+                    Console.WriteLine($" {UniqueSubstringCount.Sum(x => x.Value * x.Key.Length)}");
+                }
 
 
 
+            }
+        }
 
     }
-
-
 }

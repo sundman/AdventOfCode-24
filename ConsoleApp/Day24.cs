@@ -299,10 +299,10 @@ namespace ConsoleApp
 
 
 
-            swap(Gates["dwp"], Gates["kfm"]);
-            swap(Gates["z22"], Gates["gjh"]);
-            swap(Gates["z31"], Gates["jdr"]);
-            swap(Gates["ffj"], Gates["z08"]);
+            //swap(Gates["dwp"], Gates["kfm"]);
+            //swap(Gates["z22"], Gates["gjh"]);
+            //swap(Gates["z31"], Gates["jdr"]);
+            //swap(Gates["ffj"], Gates["z08"]);
             // guessWrongLeadingGates(Gates["z34"]);
 
 
@@ -318,8 +318,8 @@ namespace ConsoleApp
 
                 res = ReadNumber();
                 Console.WriteLine($"{res == (long)1 << i} 0+{i}:\t {ReadNumber()} \t= {Convert.ToString(res, 2)}");
+                
                 SetInput((long)1 << i, (long)1 << i);
-
                 res = ReadNumber();
                 Console.WriteLine($"{res == (long)2 << i} {i}+{i}:\t {ReadNumber()} \t= {Convert.ToString(res, 2)}");
             }
@@ -332,14 +332,15 @@ namespace ConsoleApp
 
             //guessWrongLeadingGates(Gates["z15"]);
             List<List<(string, string)>> print = [];
-            //  printInputsLeadingToGate(Gates["z35"], print, 0);
+              printInputsLeadingToGate(Gates["z35"], print, 0);
+              printInputsLeadingToGate(Gates["z22"], print, 0);
 
-            //for (int i = 0; i < print.Count; i++)
-            //{
-            //    var dict = print[i].OrderBy(x => x.Item1);
-            //    foreach( var kvp in dict)
-            //        Console.WriteLine($"Level {i}: {kvp.Item2}");
-            //}
+            for (int i = 0; i < print.Count; i++)
+            {
+                var dict = print[i].OrderBy(x => x.Item1);
+                foreach (var kvp in dict)
+                    Console.WriteLine($"Level {i}: {kvp.Item2}");
+            }
 
             print = [];
             // printInputsLeadingToGate(Gates["z08"], print, 0);

@@ -113,16 +113,8 @@ namespace ConsoleApp
             }
 
 
-            //foreach (var triple in triples)
-            //{
-
-            //    Console.WriteLine($"{string.Join('-', triple.Computers.Select(x => x.Name))}");
-            //}
-
             return triples.Count;
         }
-
-
 
         public decimal Part2()
         {
@@ -141,14 +133,7 @@ namespace ConsoleApp
             }
 
             List<Computer> largestSet = [];
-
             List<Computer> currentCliqueMax = [];
-
-            // while (graph.Count > largestSet.Count)
-
-            //   Console.WriteLine(($"Current graph size: {graph.Count}, Largest clique found: {currentCliqueMax.Count}"));
-            //   var currentNode = graph.First();
-
             List<List<int>> cliquest = [];
             FindClique([], graph.Select(x => x.UniqueNumber).ToHashSet(), [], cliquest, adjacencyList);
             if (currentCliqueMax.Count > largestSet.Count)
@@ -157,25 +142,17 @@ namespace ConsoleApp
                 largestSet.AddRange(currentCliqueMax);
             }
 
-            //foreach (var c1 in currentNode.ConnectedTo)
-            //{
-            //    vertices.Remove((c1.UniqueNumber << 16) + currentNode.UniqueNumber);
-            //}
-            //graph.Remove(currentNode);
-
-
-
             var maxClique = cliquest.OrderByDescending(x => x.Count).ToList();
 
             var ordered = maxClique.First().Select(x => ComputerNames.First(c => c.Value.UniqueNumber == x))
                 .OrderBy(x => x.Key);
 
+            // REAL ANSWER:
+            //Console.WriteLine($"{string.Join(',',
+            //    ordered.
+            //        Select(x => x.Value.Name))}");
 
-            Console.WriteLine($"{string.Join(',',
-                ordered.
-                    Select(x => x.Value.Name))}");
-
-            return maxClique.Count;
+            return maxClique[0].Count;
         }
 
 

@@ -117,7 +117,6 @@ namespace ConsoleApp
 
         private void WallStep(Node original, Node node, int direction, int steps = 0)
         {
-            // for (int dir = 0; dir < 4; dir++)
             {
                 var newX = node.Point.X + Directions[direction][X];
                 var newY = node.Point.Y + Directions[direction][Y];
@@ -131,12 +130,10 @@ namespace ConsoleApp
                     original.AccessibleByCheat.Add((steps + 2, newNode));
                 }
 
-                //else if (dir == direction && steps == 0)
-                //    WallStep(original, newNode, 1, 1);
             }
-
-
         }
+
+
 
         private void FindStepsFromGoal()
         {
@@ -184,37 +181,9 @@ namespace ConsoleApp
                         count.TryAdd(win, 0);
                         count[win]++;
                     }
-
-                    //var minByCheat = node.AccessibleByCheat
-                    //     .Min((cheat) => cheat.node.distanceFromGoal + cheat.steps);
-
-                    //if (minByCheat != null)
-                    //{
-                    //    if (distanceFromGoal - minByCheat >= gain)
-                    //    {
-                    //        toReturn++;
-
-                    //        if (!count.ContainsKey(win))
-                    //            count[win] = 0;
-
-                    //        count[win]++;
-                    //var bestNode = node.AccessibleByCheat
-                    //    .First((cheat) => cheat.node.distanceFromGoal + cheat.steps == minByCheat);
-
-
-
-                    //if (minByCheat < distanceFromGoal)
-                    //{
-                    //    Console.WriteLine($"Cheat gaining {distanceFromGoal - minByCheat} from {node.Point} to {bestNode.node.Point} ");
-                    //}
                 }
             }
 
-
-            //foreach (var keyValuePair in count.OrderBy(x => x.Key))
-            //{
-            //    Console.WriteLine($"Cheats gaining {keyValuePair.Key}: {keyValuePair.Value}");
-            //}
 
             return toReturn;
         }
@@ -225,7 +194,6 @@ namespace ConsoleApp
             BuildNodeTree();
             FindStepsFromGoal();
 
-            // print(NodeMap);
             return FindCheatsGainingAtLeast(100);
 
         }
@@ -241,16 +209,15 @@ namespace ConsoleApp
             int maxCheat = 20;
             int countCheatsOfAtLeast = 100;
             decimal toReturn = 0;
-            Dictionary<int, int> count = [];
             var roads = Nodes.Where(x => x.Type == Type.Road)
                 .OrderBy(x => x.distanceFromGoal).ToArray();
 
             for (int i = 0; i < roads.Length - countCheatsOfAtLeast - 2; i++)
             {
                 var start = roads[i];
-                
+
                 var startDistanceFromGoal = start.distanceFromGoal.Value;
-                
+
                 for (int j = i + countCheatsOfAtLeast + 2; j < roads.Length; j++)
                 {
                     var target = roads[j];
@@ -260,46 +227,17 @@ namespace ConsoleApp
 
                     var gains = target.distanceFromGoal.Value - startDistanceFromGoal - distance;
 
-                    if (gains < countCheatsOfAtLeast)
-                        continue;
+                    if (gains >= countCheatsOfAtLeast)
+                        toReturn++;
 
-                    toReturn++;
-
-                    //count.TryAdd(gains, 0);
-                    //count[gains]++;
                 }
             }
 
-            //foreach (var keyValuePair in count.OrderBy(x => x.Key))
-            //{
-            //    Console.WriteLine($"- There are {keyValuePair.Value} cheats that save {keyValuePair.Key} picoseconds.");
-            //}
 
             return toReturn;
 
         }
 
-
-
-        HashSet<Node> uniqueNodesVisited = new();
-        //private void RecursiveCountUniqueTilesOfCheapestPath(Node from, Node last)
-        //{
-        //    uniqueNodesVisited.Add(from);
-
-        //    if (from == Start)
-        //        return;
-
-        //    for (var i = 0; i < 4; i++)
-        //    {
-        //        if (from.Roads[i] == null)
-        //            continue;
-
-        //        if (from.Roads[i].distanceFromGoal == from.distanceFromGoal - 1 ||
-        //            from.Roads[i].distanceFromGoal == last.distanceFromGoal - 2 || // stupid special rule, but it could be a T-junction
-        //           from.Roads[i].distanceFromGoal == from.distanceFromGoal - 1001)
-        //            RecursiveCountUniqueTilesOfCheapestPath(from.Roads[i], from);
-        //    }
-        //}
 
 
 
